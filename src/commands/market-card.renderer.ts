@@ -75,12 +75,11 @@ function formatPrice(price: number): string {
 }
 
 const RARITY_LABELS: Record<Rarity, string> = {
-  common: 'Common',
-  uncommon: 'Uncommon',
-  rare: 'Rare',
-  epic: 'Epic',
-  legendary: 'Legendary',
-  mythic: 'Mythic',
+  N: 'N',
+  R: 'R',
+  SR: 'SR',
+  SSR: 'SSR',
+  UR: 'UR',
 };
 
 const imageCache = new Map<string, Image>();

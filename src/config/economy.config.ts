@@ -32,15 +32,15 @@ export const economy = {
   // (consolação), proporcional ao kizunaPrice da raridade. Consome o cooldown de bind como
   // um claim normal — então não dá para farmar coins repetindo o clique.
   bind: {
-    dupeRewardFactor: 0.25, // fração do kizunaPrice da raridade (common 5 … mythic 500)
+    dupeRewardFactor: 0.25, // fração do kizunaPrice da raridade (N 7 … UR 500)
   },
 
   // --- Pity timer (só hard) ---
-  // Sem soft pity: legendary/mythic são pura sorte (chance fixa por roll, ver RARITY_CHANCES). O
+  // Sem soft pity: SSR/UR são pura sorte (chance fixa por roll, ver RARITY_CHANCES). O
   // hard pity é só misericórdia para sequências muito azaradas — fica longe de propósito pra não
   // virar um contador. O contador (rollsSinceHighRarity) zera ao obter Legendary OU Mythic.
   pity: {
-    hardPity: 1000, // garante legendary; rede de segurança, não um teto que todos batem
+    hardPity: 1000, // garante SSR; rede de segurança, não um teto que todos batem
   },
 
   // --- Mira de anime (targeting VIP) ---

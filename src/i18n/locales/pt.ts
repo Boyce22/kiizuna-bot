@@ -3,7 +3,7 @@ import type { LocaleTree } from './en';
 export const pt: LocaleTree = {
   common: {
     coins: 'coins',
-    rarity: { common: 'Comum', uncommon: 'Incomum', rare: 'Raro', epic: 'Épico', legendary: 'Lendário', mythic: 'Mítico' },
+    rarity: { N: 'N', R: 'R', SR: 'SR', SSR: 'SSR', UR: 'UR' },
     type: { waifu: 'Waifu', husbando: 'Husbando', unknown: 'Desconhecido' },
     cancel: 'Cancelar',
     confirm: 'Confirmar',
@@ -111,7 +111,7 @@ export const pt: LocaleTree = {
     hero: '-# {badge} **{rankName}**',
     coins: '💰 Coins',
     stats_caption: 'Coleção',
-    stats_line: '**{mythic}** Mythic　　**{epic}** Epic　　**{rare}** Rare　　**{common}** Common',
+    stats_line: '**{ur}** UR　　**{ssr}** SSR　　**{sr}** SR　　**{r}** R　　**{n}** N',
     activity_caption: 'Atividade',
     activity_line: '**{duels}** Vitórias　　**{streak}** Streak',
     favorite: '**Favorito**',
@@ -267,7 +267,7 @@ export const pt: LocaleTree = {
     buy_select_placeholder: 'Escolha um personagem para comprar…',
     buy_timeout: '⌛ A seleção expirou.',
     buy_error: '⚠️ Algo deu errado na compra. Tente novamente.',
-    filter_usage: '{prefix}market [rare|epic|legendary|mythic] — ou --raridade <raridade>',
+    filter_usage: '{prefix}market [R|SR|SSR|UR] — ou --raridade <raridade>',
   },
   marketAdmin: {
     char_not_found: '❓ Personagem #{id} não encontrado.',
@@ -372,7 +372,7 @@ export const pt: LocaleTree = {
   },
   globaltop: {
     empty: '📭 O leaderboard ainda está sendo montado. Tente em breve.',
-    title: { harem: '🌐 Top — coleção', bond: '🌐 Top — bond', mythics: '🌐 Top — mythics' },
+    title: { harem: '🌐 Top — coleção', bond: '🌐 Top — bond', mythics: '🌐 Top — UR' },
   },
   globalhide: {
     on: '🙈 Você saiu dos rankings globais.',
@@ -549,7 +549,7 @@ export const pt: LocaleTree = {
     reroll: { description: 'Repete seu último summon (VIP)' },
     soulmate: { description: 'Define seu personagem soulmate (Kizuna+)' },
     globalprofile: { description: 'Perfil cross-server' },
-    globaltop: { description: 'Leaderboard global (harem/bond/mythics)' },
+    globaltop: { description: 'Leaderboard global (harem/bond/UR)' },
     globalhide: { description: 'Alterna privacidade no ranking global' },
     ranks: { description: 'Mostra a escada de ranks' },
     showcase: { description: 'Vitrine global (set/remove/ver)' },

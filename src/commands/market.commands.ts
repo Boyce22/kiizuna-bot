@@ -21,18 +21,18 @@ const PREV_ID = 'mkt_prev';
 const NEXT_ID = 'mkt_next';
 const BUY_ID = 'mkt_buy';
 const BUY_SELECT_ID = 'mkt_buy_select';
-const FILTERABLE: Rarity[] = ['rare', 'epic', 'legendary', 'mythic'];
+const FILTERABLE: Rarity[] = ['R', 'SR', 'SSR', 'UR'];
 const RARITY_FLAGS = new Set(['raridade', 'rarity', 'rareza']);
 
 function readRarityFilter(args: string[], flags: Record<string, string | boolean>): { rarity?: Rarity; invalid?: boolean } {
   let raw: string | undefined;
   for (const [key, value] of Object.entries(flags)) {
     if (RARITY_FLAGS.has(key.toLowerCase()) && typeof value === 'string') {
-      raw = value.toLowerCase();
+      raw = value.toUpperCase();
       break;
     }
   }
-  if (!raw && args[0]) raw = args[0].toLowerCase();
+  if (!raw && args[0]) raw = args[0].toUpperCase();
   if (!raw) return {};
   if (FILTERABLE.includes(raw as Rarity)) return { rarity: raw as Rarity };
   return { invalid: true };

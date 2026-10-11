@@ -166,7 +166,7 @@ const channelOption = (description: string, required = false): SlashOptionSpec =
   target: 'mention',
 });
 
-const rarityChoices = ['rare', 'epic', 'legendary', 'mythic'].map((value) => ({ name: value, value }));
+const rarityChoices = ['R', 'SR', 'SSR', 'UR'].map((value) => ({ name: value, value }));
 const tierChoices = ['kizuna', 'kizuna+', 'eternal'].map((value) => ({ name: value, value }));
 
 export const slashRoutes: SlashRouteSpec[] = [

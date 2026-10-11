@@ -10,6 +10,7 @@ const METRICS: Record<string, 'harem' | 'bond' | 'mythics'> = {
   bond: 'bond',
   mythics: 'mythics',
   mythic: 'mythics',
+  ur: 'mythics',
 };
 
 export class GlobalCommands {

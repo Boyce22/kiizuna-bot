@@ -24,7 +24,7 @@ export const RANKS: RankDef[] = [
 
 // Pesos do globalMasteryScore (tudo leitura dos dados existentes).
 export const MASTERY_WEIGHTS = {
-  rarity: { common: 1, uncommon: 3, rare: 5, epic: 20, legendary: 50, mythic: 100 } as Record<Rarity, number>,
+  rarity: { N: 2, R: 5, SR: 20, SSR: 50, UR: 100 } as Record<Rarity, number>,
   bondFactor: 0.1,
   duelWinFactor: 2,
   streakFactor: 1,

@@ -3,7 +3,7 @@ import type { LocaleTree } from './en';
 export const ja: LocaleTree = {
   common: {
     coins: 'コイン',
-    rarity: { common: 'コモン', uncommon: 'アンコモン', rare: 'レア', epic: 'エピック', legendary: 'レジェンダリー', mythic: 'ミシック' },
+    rarity: { N: 'N', R: 'R', SR: 'SR', SSR: 'SSR', UR: 'UR' },
     type: { waifu: '嫁', husbando: '旦那', unknown: '不明' },
     cancel: 'キャンセル',
     confirm: '確認',
@@ -111,7 +111,7 @@ export const ja: LocaleTree = {
     hero: '-# {badge} **{rankName}**',
     coins: '💰 コイン',
     stats_caption: 'コレクション',
-    stats_line: '**{mythic}** Mythic　　**{epic}** Epic　　**{rare}** Rare　　**{common}** Common',
+    stats_line: '**{ur}** UR　　**{ssr}** SSR　　**{sr}** SR　　**{r}** R　　**{n}** N',
     activity_caption: 'アクティビティ',
     activity_line: '**{duels}** 勝　　**{streak}** 連続',
     favorite: '**お気に入り**',
@@ -267,7 +267,7 @@ export const ja: LocaleTree = {
     buy_select_placeholder: '購入するキャラクターを選択…',
     buy_timeout: '⌛ 選択がタイムアウトしました。',
     buy_error: '⚠️ 購入処理でエラーが発生しました。もう一度お試しください。',
-    filter_usage: '{prefix}market [rare|epic|legendary|mythic] — または --rarity <レア度>',
+    filter_usage: '{prefix}market [R|SR|SSR|UR] — または --rarity <レア度>',
   },
   marketAdmin: {
     char_not_found: '❓ キャラクター#{id}が見つかりません。',
@@ -372,7 +372,7 @@ export const ja: LocaleTree = {
   },
   globaltop: {
     empty: '📭 リーダーボードは構築中です。しばらくしてからお試しください。',
-    title: { harem: '🌐 トップ — コレクション', bond: '🌐 トップ — 絆', mythics: '🌐 トップ — ミシック' },
+    title: { harem: '🌐 トップ — コレクション', bond: '🌐 トップ — 絆', mythics: '🌐 トップ — UR' },
   },
   globalhide: {
     on: '🙈 グローバルランキングから非表示になりました。',
@@ -549,7 +549,7 @@ export const ja: LocaleTree = {
     reroll: { description: '直前の召喚をやり直す（VIP）' },
     soulmate: { description: 'ソウルメイトを設定する（Kizuna+）' },
     globalprofile: { description: 'サーバー横断プロフィール' },
-    globaltop: { description: 'グローバルランキング（harem/bond/mythics）' },
+    globaltop: { description: 'グローバルランキング（harem/bond/UR）' },
     globalhide: { description: 'グローバルランキングの表示/非表示' },
     ranks: { description: 'ランクの階段を表示する' },
     showcase: { description: 'グローバルショーケース（set/remove/表示）' },

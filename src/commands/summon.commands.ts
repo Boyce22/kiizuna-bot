@@ -1,3 +1,4 @@
+import type { Rarity } from '@config';
 import { buildCharacterEmbed, checkNsfwPermission, discordRelative, readFlag } from '@utils';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 
@@ -28,7 +29,7 @@ type SummonOk = {
     id: number;
     name: string;
     series: string | null;
-    rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'mythic';
+    rarity: Rarity;
     type: string;
     isNsfw: boolean;
     imageUrl: string | null;

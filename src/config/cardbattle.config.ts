@@ -9,12 +9,11 @@ export const cardbattle = {
   // Custo de comprar uma carta (em gold = coin real). Base por raridade da carta sorteada do
   // deck; sobe `costGrowth` a cada compra (composto). Ver game.cardCost.
   cardCostBase: {
-    common: 60,
-    uncommon: 67,
-    rare: 75,
-    epic: 90,
-    legendary: 105,
-    mythic: 120,
+    N: 63,
+    R: 75,
+    SR: 90,
+    SSR: 105,
+    UR: 120,
   } as Record<Rarity, number>,
   costGrowth: 0.06, // +6% por compra (composto)
 

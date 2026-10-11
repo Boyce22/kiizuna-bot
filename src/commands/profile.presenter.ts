@@ -69,10 +69,11 @@ export function buildProfileContainer(
   const stats = [
     `-# ${t('profile.stats_caption')}`,
     t('profile.stats_line', {
-      mythic: formatNumber(by.mythic ?? 0),
-      epic: formatNumber(by.epic ?? 0),
-      rare: formatNumber(by.rare ?? 0),
-      common: formatNumber(by.common ?? 0),
+      ur: formatNumber(by.UR ?? 0),
+      ssr: formatNumber(by.SSR ?? 0),
+      sr: formatNumber(by.SR ?? 0),
+      r: formatNumber(by.R ?? 0),
+      n: formatNumber(by.N ?? 0),
     }),
     `-# ${t('profile.activity_caption')}`,
     t('profile.activity_line', {

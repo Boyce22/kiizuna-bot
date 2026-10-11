@@ -1,3 +1,4 @@
+import type { Rarity } from '@config';
 import { buildCharacterEmbed, checkNsfwPermission, discordRelative } from '@utils';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 
@@ -10,7 +11,7 @@ type RerollOk = {
     id: number;
     name: string;
     series: string | null;
-    rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'mythic';
+    rarity: Rarity;
     imageUrl: string | null;
   };
 };

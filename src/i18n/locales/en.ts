@@ -2,7 +2,7 @@
 export const en = {
   common: {
     coins: 'coins',
-    rarity: { common: 'Common', uncommon: 'Uncommon', rare: 'Rare', epic: 'Epic', legendary: 'Legendary', mythic: 'Mythic' },
+    rarity: { N: 'N', R: 'R', SR: 'SR', SSR: 'SSR', UR: 'UR' },
     type: { waifu: 'Waifu', husbando: 'Husbando', unknown: 'Unknown' },
     cancel: 'Cancel',
     confirm: 'Confirm',
@@ -110,7 +110,7 @@ export const en = {
     hero: '-# {badge} **{rankName}**',
     coins: '💰 Coins',
     stats_caption: 'Collection',
-    stats_line: '**{mythic}** Mythic　　**{epic}** Epic　　**{rare}** Rare　　**{common}** Common',
+    stats_line: '**{ur}** UR　　**{ssr}** SSR　　**{sr}** SR　　**{r}** R　　**{n}** N',
     activity_caption: 'Activity',
     activity_line: '**{duels}** Wins　　**{streak}** Streak',
     favorite: '**Favorite**',
@@ -266,7 +266,7 @@ export const en = {
     buy_select_placeholder: 'Choose a character to buy…',
     buy_timeout: '⌛ Selection timed out.',
     buy_error: '⚠️ Something went wrong with the purchase. Try again.',
-    filter_usage: '{prefix}market [rare|epic|legendary|mythic] — or --rarity <rarity>',
+    filter_usage: '{prefix}market [R|SR|SSR|UR] — or --rarity <rarity>',
   },
   marketAdmin: {
     char_not_found: '❓ Character #{id} not found.',
@@ -371,7 +371,7 @@ export const en = {
   },
   globaltop: {
     empty: '📭 The leaderboard is still being built. Try again soon.',
-    title: { harem: '🌐 Top — collection', bond: '🌐 Top — bond', mythics: '🌐 Top — mythics' },
+    title: { harem: '🌐 Top — collection', bond: '🌐 Top — bond', mythics: '🌐 Top — UR' },
   },
   globalhide: {
     on: '🙈 You are now hidden from global rankings.',
@@ -549,7 +549,7 @@ export const en = {
     reroll: { description: 'Redo your last summon (VIP)' },
     soulmate: { description: 'Set your soulmate character (Kizuna+)' },
     globalprofile: { description: 'Cross-server profile' },
-    globaltop: { description: 'Global leaderboard (harem/bond/mythics)' },
+    globaltop: { description: 'Global leaderboard (harem/bond/UR)' },
     globalhide: { description: 'Toggle global ranking privacy' },
     ranks: { description: 'Show the rank ladder' },
     showcase: { description: 'Global showcase (set/remove/view)' },

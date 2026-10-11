@@ -2,7 +2,8 @@
 // via VipService.getPerks(tier). Ordem (nível): none < tomodachi < nakama < kizuna < eien.
 
 export type VipTierKey = 'none' | 'tomodachi' | 'nakama' | 'kizuna' | 'eien';
-export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'mythic';
+// Raridade das cartas, da mais comum para a mais rara (N reúne as antigas common e uncommon).
+export type Rarity = 'N' | 'R' | 'SR' | 'SSR' | 'UR';
 
 export interface VipPerks {
   level: number;
@@ -16,6 +17,7 @@ export interface VipPerks {
   tributeMultiplier: number;
   rerollsPerDay: number;
   wishlistSlots: number;
+  favoriteSlots: number; // cartas favoritas por escopo (o vínculo delas decai pela metade)
   showcaseSlots: number;
   targetTokensPerDay: number; // tokens de mira de anime liberados por dia
   marketTaxFloor: number; // piso da taxa progressiva
@@ -39,6 +41,7 @@ export const VIP_TIERS: Record<VipTierKey, VipPerks> = {
     tributeMultiplier: 1,
     rerollsPerDay: 0,
     wishlistSlots: 5,
+    favoriteSlots: 3,
     showcaseSlots: 3,
     targetTokensPerDay: 0,
     marketTaxFloor: 0.05,
@@ -58,6 +61,7 @@ export const VIP_TIERS: Record<VipTierKey, VipPerks> = {
     tributeMultiplier: 1.25,
     rerollsPerDay: 1,
     wishlistSlots: 10,
+    favoriteSlots: 5,
     showcaseSlots: 5,
     targetTokensPerDay: 1,
     marketTaxFloor: 0.04,
@@ -77,6 +81,7 @@ export const VIP_TIERS: Record<VipTierKey, VipPerks> = {
     tributeMultiplier: 1.5,
     rerollsPerDay: 2,
     wishlistSlots: 20,
+    favoriteSlots: 8,
     showcaseSlots: 7,
     targetTokensPerDay: 2,
     marketTaxFloor: 0.03,
@@ -96,6 +101,7 @@ export const VIP_TIERS: Record<VipTierKey, VipPerks> = {
     tributeMultiplier: 2,
     rerollsPerDay: 4,
     wishlistSlots: 40,
+    favoriteSlots: 12,
     showcaseSlots: 10,
     targetTokensPerDay: 3,
     marketTaxFloor: 0.02,
@@ -115,6 +121,7 @@ export const VIP_TIERS: Record<VipTierKey, VipPerks> = {
     tributeMultiplier: 3,
     rerollsPerDay: 8,
     wishlistSlots: 100,
+    favoriteSlots: 20,
     showcaseSlots: 15,
     targetTokensPerDay: 5,
     marketTaxFloor: 0.01,
