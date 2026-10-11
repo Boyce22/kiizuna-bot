@@ -35,8 +35,8 @@ export const ja: LocaleTree = {
     footer: '#{id} • {series} • {rarity}',
     wishlist_ping: '🔔 {users}、ウィッシュリストの**{name}**が出現しました！',
     anime_wishlist_ping: '🎌 {users}、アニメウィッシュリストの**{series}**から**{name}**が出現しました！',
-    usage: 'k!summon <waifu|husbando|all> [--nsfw] [--target <anime>]',
-    usage_target: 'k!summon ... --target <anime>',
+    usage: '{prefix}summon <waifu|husbando|all> [--nsfw] [--target <anime>]',
+    usage_target: '{prefix}summon ... --target <anime>',
   },
   bind: {
     none_active: 'ここに結べる召喚がありません。',
@@ -85,7 +85,7 @@ export const ja: LocaleTree = {
     pick_prompt: '🔎 複数の候補が見つかりました — 選んでください:',
     pick_timeout: '⌛ 選択の時間が切れました。',
     usage:
-      '❓ 使い方: `k!wishlist add|remove <名前>`（または `--name <名前> --anime <アニメ>`）、`k!wishlist clear` または `k!wishlist list`。',
+      '❓ 使い方: `{prefix}wishlist add|remove <名前>`（または `--name <名前> --anime <アニメ>`）、`{prefix}wishlist clear` または `{prefix}wishlist list`。',
     list: { title: '{user}のウィッシュリスト', empty: '📭 ウィッシュリストは空です。' },
     clear: {
       confirm: '⚠️ ウィッシュリスト**全体**（{count}件）を消去しますか？元に戻せません。',
@@ -95,7 +95,7 @@ export const ja: LocaleTree = {
     },
   },
   animewishlist: {
-    not_set: '📭 まだアニメを選んでいません。`k!animewishlist <名前>`を使ってください。',
+    not_set: '📭 まだアニメを選んでいません。`{prefix}animewishlist <名前>`を使ってください。',
     current: '🎌 あなたのお気に入りアニメ: **{series}**。',
     current_locked: '🎌 あなたのお気に入りアニメ: **{series}**。変更・削除できるのは{time}です。',
     locked: '🔒 お気に入りアニメの変更・削除ができるのは{time}です。',
@@ -144,6 +144,11 @@ export const ja: LocaleTree = {
     no_coins: '💸 コインが足りません。',
     min: '❓ 最低**{min}**コイン（＝絆1）。',
   },
+  site: {
+    prompt: '🔗 WebでKizunaを開いて、コレクションとアカウントを確認できます。',
+    open: 'Webで開く',
+    link: '🔗 あなたのリンク（15分間有効、あなたのアカウントでのみ開けます）: {url}',
+  },
   boss: {
     title: '👹 今日のボス',
     hp: '❤️ HP {hp}',
@@ -183,7 +188,7 @@ export const ja: LocaleTree = {
   },
   blackjack: {
     title: '🃏 あなた vs ディーラー · 💰 {bet}',
-    usage: '❓ 使い方: `k!blackjack <ベット>`（{min}〜{max}コイン）。',
+    usage: '❓ 使い方: `{prefix}blackjack <ベット>`（{min}〜{max}コイン）。',
     no_coins: '💸 そのベットに足りるコインがありません。',
     dealer: 'ディーラー',
     you: 'あなた',
@@ -209,7 +214,7 @@ export const ja: LocaleTree = {
     cancelled_title: '🪑 テーブルを閉じました',
     cancelled_line1: '🚫 ホストがテーブルを閉じました',
     cancelled_line2: '💰 ベットは返却されました',
-    cancelled_footer: 'もう一度 `k!{command} <ベット>` でお試しください',
+    cancelled_footer: 'もう一度 `{prefix}{command} <ベット>` でお試しください',
     your_turn_ping: '🎲 {user} の番です！',
     only_host: '🚫 テーブルを開いた人だけが早期開始できます。',
     already_in: '🚫 すでにこのテーブルにいます。',
@@ -231,7 +236,7 @@ export const ja: LocaleTree = {
     not_enough_title: '🪑 テーブル終了',
     not_enough_line1: '🚫 誰も時間内に参加しませんでした',
     not_enough_line2: '💰 **{bet}**コインのベットは返却されました',
-    not_enough_footer: '`k!bjpvp <ベット額>` でもう一度お試しください',
+    not_enough_footer: '`{prefix}bjpvp <ベット額>` でもう一度お試しください',
   },
   gallery: {
     title: { bond: '💞 強い絆', rarity: '💎 最高レアリティ', soulmates: '💖 ソウルメイト' },
@@ -262,7 +267,7 @@ export const ja: LocaleTree = {
     buy_select_placeholder: '購入するキャラクターを選択…',
     buy_timeout: '⌛ 選択がタイムアウトしました。',
     buy_error: '⚠️ 購入処理でエラーが発生しました。もう一度お試しください。',
-    filter_usage: 'k!market [rare|epic|legendary|mythic] — または --rarity <レア度>',
+    filter_usage: '{prefix}market [rare|epic|legendary|mythic] — または --rarity <レア度>',
   },
   marketAdmin: {
     char_not_found: '❓ キャラクター#{id}が見つかりません。',
@@ -312,7 +317,7 @@ export const ja: LocaleTree = {
       title: '✨ VIP — 現在のティア: {tier}',
       current: '🎲 {rolls}ロール · ⭐ ウィッシュリスト{wishlist}枠 · 💍 結びCD {cooldown}分 · 🗡️ 奪取CD {steal}分',
       tiers: 'ティア',
-      upgrade: 'k!vip checkout <tier> でアップグレード',
+      upgrade: '{prefix}vip checkout <tier> でアップグレード',
     },
     tier_line: '{emoji} **{name}** — ${price}/月',
     perks: {
@@ -330,8 +335,8 @@ export const ja: LocaleTree = {
         '🪙 割安枠/月: **{quota}**\n' +
         '📋 出品枠: **{listings}**\n' +
         '💠 ショーケースの枠飾り: {frame}\n' +
-        '💖 ソウルメイト (k!soulmate): {soulmate}',
-      footer: '他の段階は k!vip perks <tier> で確認',
+        '💖 ソウルメイト ({prefix}soulmate): {soulmate}',
+      footer: '他の段階は {prefix}vip perks <tier> で確認',
     },
     checkout: '💳 **{tier}**のチェックアウト（${price}/月）: {url}',
     checkout_unavailable: '💳 チェックアウトは利用できません（手動課金）。管理者に連絡してください。',
@@ -349,7 +354,7 @@ export const ja: LocaleTree = {
   },
   reroll: {
     vip_required: '🔒 リロールはVIP特典です（Tomodachi+）。',
-    no_summon: '❓ リロールする前回の召喚がありません。まずk!summonを使ってください。',
+    no_summon: '❓ リロールする前回の召喚がありません。まず{prefix}summonを使ってください。',
     none_left: '⏳ リロールがありません。{time}にリセットされます。',
   },
   soulmate: {
@@ -406,19 +411,19 @@ export const ja: LocaleTree = {
   coins: {
     balance: '💰 **{amount}** コインを持っています。',
     admin: {
-      usage: '❓ オーナー用: `k!coins give|take @user <数量>` · `k!coins clear @user`',
+      usage: '❓ オーナー用: `{prefix}coins give|take @user <数量>` · `{prefix}coins clear @user`',
       gave: '💰 {user} に **{amount}** コインを付与しました。新しい残高: **{balance}**。',
       took: '💸 {user} から **{amount}** コインを引きました。新しい残高: **{balance}**。',
       cleared: '🧹 {user} のウォレットを **0** にリセットしました。',
     },
   },
   resetrolls: {
-    usage: '❓ 使い方（オーナー）: `k!resetrolls @user` · `k!resetrolls all`',
+    usage: '❓ 使い方（オーナー）: `{prefix}resetrolls @user` · `{prefix}resetrolls all`',
     one: '🔄 {user} のロールを **{rolls}** に補充しました。',
     all: '🔄 **{count}** 人のロールをリセットしました。次の召喚で補充されます。',
   },
   resetclaim: {
-    usage: '❓ 使い方（オーナー）: `k!resetclaim @user`',
+    usage: '❓ 使い方（オーナー）: `{prefix}resetclaim @user`',
     one: '💍 {user} のクレームをリセットしました — すぐにバインドできます。',
   },
   tribute: {
@@ -438,15 +443,15 @@ export const ja: LocaleTree = {
     prefix_set: '✅ プレフィックスを `{prefix}` に設定しました。',
     locale_set: '✅ デフォルト言語を**{locale}**に設定しました。',
     interval_set: '✅ ロール間隔を**{minutes}**分に設定しました。',
-    invalid: '❓ 無効な値です。使い方: `k!setup mode|channel|types|prefix|locale|interval <値>`。',
+    invalid: '❓ 無効な値です。使い方: `{prefix}setup mode|channel|types|prefix|locale|interval <値>`。',
     mode_set: '✅ ゲームモードを**{mode}**に設定しました。この選択は変更できません。',
     mode_already: '🔒 このサーバーはすでに**{mode}**モードです — 変更できません。',
     mode_usage:
-      '❓ 使い方: `k!setup mode guild|global` — **guild**: このサーバー専用のカードとコイン、**global**: すべてのグローバルサーバーで共有。変更不可。',
+      '❓ 使い方: `{prefix}setup mode guild|global` — **guild**: このサーバー専用のカードとコイン、**global**: すべてのグローバルサーバーで共有。変更不可。',
     mode_names: { guild: 'サーバー', global: 'グローバル', unset: '未設定' },
     channels: {
       no_owner: '🔒 サーバー所有者のみが許可チャンネルを管理できます。',
-      usage: '❓ 使い方: `k!setup channels add|remove|list [#チャンネル]`',
+      usage: '❓ 使い方: `{prefix}setup channels add|remove|list [#チャンネル]`',
       empty: '📭 チャンネル制限なし — すべてのチャンネルで動作します。',
       list: '🔒 許可チャンネル: {channels}',
       added: '✅ チャンネル {channel} を許可リストに追加しました。',
@@ -486,7 +491,7 @@ export const ja: LocaleTree = {
     variant_suffix: ' · #{base}のバリアント',
   },
   editchar: {
-    usage: '❓ 使い方: `k!editchar <id>`',
+    usage: '❓ 使い方: `{prefix}editchar <id>`',
     not_found: '❓ キャラクター #{id} が見つかりません。',
     preview: '✏️ **{name}** #{id} を編集中\n📺 {series} · {rarity} · {type} · {nsfw}',
     button_texts: '✏️ 名前/シリーズを編集',
@@ -496,7 +501,7 @@ export const ja: LocaleTree = {
     timeout: '⌛ 編集がタイムアウトしました — もう一度実行してください。',
   },
   removechar: {
-    usage: '❓ 使い方: `k!removechar <id>`',
+    usage: '❓ 使い方: `{prefix}removechar <id>`',
     not_found: '❓ キャラクター #{id} が見つかりません。',
     confirm:
       '⚠️ **{name}** (#{id}) と全ての関連（ハーレム・ウィッシュリスト・マーケット・オークション）を削除しますか？元に戻せません。',
@@ -517,7 +522,7 @@ export const ja: LocaleTree = {
     cancelled: '🚫 クリーンアップをキャンセルしました。',
     done: '🗑️ {channel} から **{deleted}** 件のメッセージを削除しました。{failed, plural, =0 {} other { **{failed}** 件失敗しました（おそらく14日以上経過）。}}',
     timeout: '⌛ 確認がタイムアウトしました — もう一度コマンドを実行してください。',
-    usage: '❓ 使い方（オーナー）: `k!clearmessages [#チャンネル]` — ボットメッセージとコマンドをスキャンして削除します。',
+    usage: '❓ 使い方（オーナー）: `{prefix}clearmessages [#チャンネル]` — ボットメッセージとコマンドをスキャンして削除します。',
   },
   command: {
     summon: { description: 'ランダムにキャラクターを召喚する' },
@@ -527,14 +532,15 @@ export const ja: LocaleTree = {
     profile: { description: 'サーバーのプロフィールカードを表示する' },
     gift: { description: 'コインを使ってキャラクターの絆を上げる' },
     boss: { description: '今日のボスを表示してバトル（カードバトル）を開く' },
+    site: { description: 'Kizunaサイトへの安全なリンクを受け取ります' },
     duel: { description: '他のプレイヤーにコインを賭けて挑戦する' },
     higherlower: { description: 'ハイ＆ロー: どちらが高価か当てる' },
     blackjack: { description: 'ディーラーとブラックジャックでコイン勝負' },
     bjtable: { description: '最大4人でディーラーと対戦するブラックジャックテーブルを開く' },
-    bjpvp: { description: 'ブラックジャックPvP — 最大4人がディーラーなしで対戦' },
+    bjpvp: { description: '最大3人の相手とブラックジャックで対戦します' },
     gallery: { description: 'サーバーのショーケース（絆/レア/ソウルメイト）' },
     sell: { description: 'キャラクターをKizunaにコインで売る' },
-    market: { description: '固定価格マーケット — 閲覧・購入、レア度で絞り込み' },
+    market: { description: '固定価格で販売中のキャラクターを確認して購入します' },
     auction: { description: 'オークション (start/bid/info/list/cancel)' },
     trade: { description: '他のプレイヤーとキャラクターを交換する' },
     vip: { description: 'VIPの概要・特典・状況・チェックアウト' },

@@ -8,13 +8,17 @@
     "build": "tsc && tsc-alias",
     "start": "node dist/index.js",
     "dev": "ts-node -r tsconfig-paths/register src/index.ts",
+    "commands:register": "ts-node -r tsconfig-paths/register src/register-commands.ts",
+    "test": "npm run build && node --test dist/slash-command-catalog.test.js dist/command-runtime.test.js",
     "typecheck": "tsc --noEmit"
   },
   "license": "MIT",
   "dependencies": {
     "@napi-rs/canvas": "^1.0.9",
     "discord.js": "^14.15.3",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "pino": "^10.4.0",
+    "pino-pretty": "^13.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.9",

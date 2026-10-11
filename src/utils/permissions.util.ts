@@ -15,13 +15,13 @@ function getOwnerIds(): Set<string> {
   return ownerIds;
 }
 
-/** Dono do bot (BOT_OWNER_IDS). Usado por comandos owner-only (ex.: k!vip-admin). */
+/** Dono do bot (BOT_OWNER_IDS). Usado por comandos owner-only (ex.: {prefix}vip-admin). */
 export function isBotOwner(userId: string): boolean {
   return getOwnerIds().has(userId);
 }
 
 /**
- * Membro pode administrar o servidor (perm ManageGuild). Base de k!setup e
+ * Membro pode administrar o servidor (perm ManageGuild). Base de {prefix}setup e
  * comandos de config por servidor. `null` (DM/sem membro) → false.
  */
 export function isGuildManager(member: GuildMember | null): boolean {
@@ -29,7 +29,7 @@ export function isGuildManager(member: GuildMember | null): boolean {
 }
 
 /** Dono do servidor (guild owner). Usado para comandos que só o owner — e não
- *  admins/gerentes — podem executar, ex.: `k!setup channels`. */
+ *  admins/gerentes — podem executar, ex.: `{prefix}setup channels`. */
 export function isGuildOwner(member: GuildMember | null): boolean {
   if (!member) return false;
   return member.id === member.guild.ownerId;

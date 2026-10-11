@@ -2,7 +2,7 @@ import { RARITY_COLORS } from '@config';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, MessageFlags } from 'discord.js';
 
 import type { InternalClient } from '../client';
-import type { Command, CommandContext } from '../interfaces';
+import type { CommandContext, CommandExecutor } from '../interfaces';
 
 const BOSS_COLOR = 0xb03a3a;
 
@@ -29,28 +29,28 @@ type StartResult =
 export class BossCommands {
   constructor(private readonly api: InternalClient) {}
 
-  get commands(): Command[] {
+  get commands(): CommandExecutor[] {
     return [
-      { name: 'boss', aliases: ['luta', 'battle'], descriptionKey: 'command.boss.description', execute: this.handleBoss },
+      { name: 'boss', execute: this.handleBoss },
     ];
   }
 
   private handleBoss = async (ctx: CommandContext): Promise<void> => {
-    const { message, user, t } = ctx;
-    if (!message.guildId) return;
+    const { invocation, user, t } = ctx;
+    if (!invocation.guildId) return;
 
     const result = await this.api.post<StartResult>('/internal/v1/boss/start', {
       discordId: user.discordId,
       username: user.username ?? undefined,
-      guildId: message.guildId,
-      channelId: message.channelId,
+      guildId: invocation.guildId,
+      channelId: invocation.channelId,
     });
     if (!result.ok) {
-      await message.reply(t(result.reason === 'no_boss' ? 'boss.no_boss' : 'boss.empty_harem'));
+      await invocation.reply(t(result.reason === 'no_boss' ? 'boss.no_boss' : 'boss.empty_harem'));
       return;
     }
 
-    const reply = await message.reply({
+    const reply = await invocation.reply({
       embeds: [this.bossEmbed(result.boss, t)],
       components: [this.bossRow(t)],
     });
@@ -58,7 +58,7 @@ export class BossCommands {
     try {
       const interaction = await reply.awaitMessageComponent({
         componentType: ComponentType.Button,
-        filter: (i) => i.user.id === message.author.id,
+        filter: (i) => i.user.id === invocation.author.id,
         time: 60_000,
       });
       await interaction.reply({

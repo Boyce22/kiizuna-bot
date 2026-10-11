@@ -2,28 +2,28 @@ import { ui } from '@config';
 import { checkNsfwPermission, paginate } from '@utils';
 
 import type { InternalClient } from '../client';
-import type { Command, CommandContext } from '../interfaces';
+import type { CommandContext, CommandExecutor } from '../interfaces';
 
 import { buildCollectionEmbed, type CollectionCardView } from './collection.presenter';
 
 export class CollectionCommands {
   constructor(private readonly api: InternalClient) {}
 
-  get commands(): Command[] {
+  get commands(): CommandExecutor[] {
     return [
-      { name: 'collection', aliases: ['col', 'harem'], descriptionKey: 'command.collection.description', execute: this.handleCollection },
+      { name: 'collection', execute: this.handleCollection },
     ];
   }
 
   private handleCollection = async (ctx: CommandContext): Promise<void> => {
-    const { message, t } = ctx;
-    const targetUser = message.mentions.users.first() ?? message.author;
+    const { invocation, t } = ctx;
+    const targetUser = invocation.mentions.users.first() ?? invocation.author;
     const targetName =
-      message.mentions.members?.first()?.displayName ??
-      message.member?.displayName ??
+      invocation.mentions.members?.first()?.displayName ??
+      invocation.member?.displayName ??
       targetUser.username;
-    const nsfw = checkNsfwPermission(message.channel, true).allowed;
-    const guildId = message.guildId!;
+    const nsfw = checkNsfwPermission(invocation.channel, true).allowed;
+    const guildId = invocation.guildId!;
     const pageSize = ui.pagination.collectionPageSize;
 
     type Page = {
@@ -44,12 +44,12 @@ export class CollectionCommands {
       pageSize,
     });
     if (first.total === 0 || !first.card) {
-      await message.reply(t('collection.empty', { user: targetName }));
+      await invocation.reply(t('collection.empty', { user: targetName }));
       return;
     }
 
     await paginate({
-      message,
+      invocation,
       total: first.total,
       pageSize,
       t,

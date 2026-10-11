@@ -5,13 +5,13 @@ import {
   ButtonStyle,
   ComponentType,
   type EmbedBuilder,
-  type Message,
   MessageFlags,
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
 } from 'discord.js';
 
+import type { CommandInvocation } from '../command-invocation';
 import type { TranslateFn } from '../interfaces';
 
 const PREV_ID = 'page_prev';
@@ -36,8 +36,8 @@ function buildJumpModal(t: TranslateFn, totalPages: number): ModalBuilder {
 }
 
 export interface PaginateOptions {
-  /** Mensagem que disparou o comando (define autor e canal de resposta). */
-  message: Message;
+  /** Invocação que disparou o comando (define autor e canal de resposta). */
+  invocation: CommandInvocation;
   /** Total de itens (para o cálculo de páginas). */
   total: number;
   /** Itens por página. */
@@ -58,7 +58,7 @@ export interface PaginateOptions {
  * Reutilizável por collection, gallery, globaltop, auction list, wishlist list.
  */
 export async function paginate(opts: PaginateOptions): Promise<void> {
-  const { message, total, pageSize, renderPage, t } = opts;
+  const { invocation, total, pageSize, renderPage, t } = opts;
   const timeoutMs = opts.timeoutMs ?? ui.pagination.defaultTimeoutMs;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
@@ -85,7 +85,7 @@ export async function paginate(opts: PaginateOptions): Promise<void> {
   };
 
   const embed = await renderPage(page, totalPages);
-  const reply = await message.reply({
+  const reply = await invocation.reply({
     embeds: [embed],
     components: totalPages > 1 ? [buildRow()] : [],
   });
@@ -97,7 +97,7 @@ export async function paginate(opts: PaginateOptions): Promise<void> {
   });
 
   collector.on('collect', async (interaction) => {
-    if (interaction.user.id !== message.author.id) {
+    if (interaction.user.id !== invocation.author.id) {
       await interaction.reply({ content: t('pagination.not_yours'), flags: MessageFlags.Ephemeral });
       return;
     }
@@ -109,7 +109,7 @@ export async function paginate(opts: PaginateOptions): Promise<void> {
         submit = await interaction.awaitModalSubmit({
           filter: (m) =>
             m.customId === JUMP_MODAL_ID &&
-            m.user.id === message.author.id &&
+            m.user.id === invocation.author.id &&
             m.isFromMessage() &&
             m.message.id === reply.id,
           time: timeoutMs,

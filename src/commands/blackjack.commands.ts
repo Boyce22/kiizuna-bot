@@ -3,7 +3,7 @@ import { sleep } from '@utils';
 
 import type { InternalClient } from '../client';
 import { awaitAuthorButton } from '../discord/await-button';
-import type { Command, CommandContext } from '../interfaces';
+import type { CommandContext, CommandExecutor } from '../interfaces';
 
 import {
   BJ_COLORS,
@@ -33,31 +33,31 @@ type BjFail = { ok: false; reason: 'bad_bet' | 'cooldown' | 'no_coins' | 'no_ses
 export class BlackjackCommands {
   constructor(private readonly api: InternalClient) {}
 
-  get commands(): Command[] {
+  get commands(): CommandExecutor[] {
     return [
-      { name: 'blackjack', aliases: ['bj', 'vinte-e-um'], descriptionKey: 'command.blackjack.description', execute: this.handleBlackjack },
+      { name: 'blackjack', execute: this.handleBlackjack },
     ];
   }
 
   private handleBlackjack = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, user, t } = ctx;
+    const { invocation, args, user, t } = ctx;
     const { minBet, maxBet, roundTimeoutMs } = economy.blackjack;
     const roundSeconds = Math.ceil(roundTimeoutMs / 1000);
     const bet = Number(args[0]);
     if (!Number.isInteger(bet) || bet < minBet || bet > maxBet) {
-      await message.reply(t('blackjack.usage', { min: minBet, max: maxBet }));
+      await invocation.reply(t('blackjack.usage', { min: minBet, max: maxBet }));
       return;
     }
     const start = await this.api.post<BjView | BjFail>('/internal/v1/games/blackjack/start', {
       discordId: user.discordId,
       username: user.username ?? undefined,
-      guildId: message.guildId,
+      guildId: invocation.guildId,
       bet,
     });
     if (!start.ok) {
-      if (start.reason === 'cooldown') await message.reply(t('error.cooldown', { seconds: Math.ceil((start.resetMs ?? 0) / 1000) }));
-      else if (start.reason === 'no_coins') await message.reply(t('blackjack.no_coins'));
-      else await message.reply(t('blackjack.usage', { min: minBet, max: maxBet }));
+      if (start.reason === 'cooldown') await invocation.reply(t('error.cooldown', { seconds: Math.ceil((start.resetMs ?? 0) / 1000) }));
+      else if (start.reason === 'no_coins') await invocation.reply(t('blackjack.no_coins'));
+      else await invocation.reply(t('blackjack.usage', { min: minBet, max: maxBet }));
       return;
     }
     const thumb = bjThumbnailFile();
@@ -79,14 +79,14 @@ export class BlackjackCommands {
     if (start.status === 'finished') {
       const outcome = start.outcome ?? 'lose';
       const color = outcome === 'blackjack' || outcome === 'win' ? BJ_COLORS.win : outcome === 'push' ? BJ_COLORS.push : BJ_COLORS.lose;
-      await message.reply({
+      await invocation.reply({
         embeds: [paint(start, true, bjOutcomeFooter(outcome, start.bet, start.payout ?? 0, t), color)],
         files,
       });
       return;
     }
 
-    const prompt = await message.reply({
+    const prompt = await invocation.reply({
       files,
       embeds: [paint(start, false, t('blackjack.your_turn', { seconds: roundSeconds }), BJ_COLORS.playerTurn, t('blackjack.rules'))],
       components: [bjButtons(t, false)],

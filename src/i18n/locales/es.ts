@@ -35,8 +35,8 @@ export const es: LocaleTree = {
     footer: '#{id} • {series} • {rarity}',
     wishlist_ping: '🔔 {users}, ¡**{name}** de tu lista de deseos acaba de aparecer!',
     anime_wishlist_ping: '🎌 {users}, ¡**{name}** (de **{series}**, tu anime favorito) acaba de aparecer!',
-    usage: 'k!summon <waifu|husbando|all> [--nsfw] [--objetivo <anime>]',
-    usage_target: 'k!summon ... --objetivo <anime>',
+    usage: '{prefix}summon <waifu|husbando|all> [--nsfw] [--objetivo <anime>]',
+    usage_target: '{prefix}summon ... --objetivo <anime>',
   },
   bind: {
     none_active: 'No hay invocación activa para vincular aquí.',
@@ -85,7 +85,7 @@ export const es: LocaleTree = {
     pick_prompt: '🔎 Encontré más de una coincidencia — elige una:',
     pick_timeout: '⌛ Tiempo para elegir agotado.',
     usage:
-      '❓ Uso: `k!wishlist add|remove <nombre>` (o `--name <nombre> --serie <serie>`), `k!wishlist clear` o `k!wishlist list`.',
+      '❓ Uso: `{prefix}wishlist add|remove <nombre>` (o `--name <nombre> --serie <serie>`), `{prefix}wishlist clear` o `{prefix}wishlist list`.',
     list: { title: 'Lista de deseos de {user}', empty: '📭 Tu lista de deseos está vacía.' },
     clear: {
       confirm: '⚠️ ¿Vaciar **toda** tu lista de deseos ({count} ítems)? No se puede deshacer.',
@@ -95,7 +95,7 @@ export const es: LocaleTree = {
     },
   },
   animewishlist: {
-    not_set: '📭 Todavía no elegiste un anime. Usa `k!animewishlist <nombre>`.',
+    not_set: '📭 Todavía no elegiste un anime. Usa `{prefix}animewishlist <nombre>`.',
     current: '🎌 Tu anime favorito: **{series}**.',
     current_locked: '🎌 Tu anime favorito: **{series}**. Solo puedes cambiarlo/borrarlo {time}.',
     locked: '🔒 Solo puedes cambiar o borrar tu anime favorito {time}.',
@@ -144,6 +144,11 @@ export const es: LocaleTree = {
     no_coins: '💸 No tienes suficientes coins.',
     min: '❓ Mínimo **{min}** coins (= 1 de bond).',
   },
+  site: {
+    prompt: '🔗 Abre Kizuna en la web para ver tu colección y tu cuenta.',
+    open: 'Abrir en la web',
+    link: '🔗 Tu enlace (válido 15 min, solo abre en tu cuenta): {url}',
+  },
   boss: {
     title: '👹 Boss del día',
     hp: '❤️ {hp} de vida',
@@ -183,7 +188,7 @@ export const es: LocaleTree = {
   },
   blackjack: {
     title: '🃏 Tú vs Crupier · 💰 {bet}',
-    usage: '❓ Uso: `k!blackjack <apuesta>` (entre {min} y {max} coins).',
+    usage: '❓ Uso: `{prefix}blackjack <apuesta>` (entre {min} y {max} coins).',
     no_coins: '💸 No tienes coins suficientes para esa apuesta.',
     dealer: 'Crupier',
     you: 'Tú',
@@ -209,7 +214,7 @@ export const es: LocaleTree = {
     cancelled_title: '🪑 Mesa Cerrada',
     cancelled_line1: '🚫 El anfitrión cerró la mesa',
     cancelled_line2: '💰 Las apuestas fueron devueltas',
-    cancelled_footer: 'Inténtalo de nuevo con `k!{command} <apuesta>`',
+    cancelled_footer: 'Inténtalo de nuevo con `{prefix}{command} <apuesta>`',
     your_turn_ping: '🎲 ¡{user}, es tu turno!',
     only_host: '🚫 Solo quien abrió la mesa puede iniciarla antes de tiempo.',
     already_in: '🚫 Ya estás en esta mesa.',
@@ -231,7 +236,7 @@ export const es: LocaleTree = {
     not_enough_title: '🪑 Mesa Cerrada',
     not_enough_line1: '🚫 Nadie más entró a tiempo',
     not_enough_line2: '💰 Tu apuesta de **{bet}** coins fue devuelta',
-    not_enough_footer: 'Intenta de nuevo con `k!bjpvp <apuesta>`',
+    not_enough_footer: 'Intenta de nuevo con `{prefix}bjpvp <apuesta>`',
   },
   gallery: {
     title: { bond: '💞 Lazos más fuertes', rarity: '💎 Los más raros', soulmates: '💖 Soulmates' },
@@ -262,7 +267,7 @@ export const es: LocaleTree = {
     buy_select_placeholder: 'Elige un personaje para comprar…',
     buy_timeout: '⌛ La selección expiró.',
     buy_error: '⚠️ Algo salió mal con la compra. Inténtalo de nuevo.',
-    filter_usage: 'k!market [rare|epic|legendary|mythic] — o --rareza <rareza>',
+    filter_usage: '{prefix}market [rare|epic|legendary|mythic] — o --rareza <rareza>',
   },
   marketAdmin: {
     char_not_found: '❓ Personaje #{id} no encontrado.',
@@ -312,7 +317,7 @@ export const es: LocaleTree = {
       title: '✨ VIP — tier actual: {tier}',
       current: '🎲 {rolls} rolls · ⭐ {wishlist} espacios de lista · 💍 cooldown de claim {cooldown}min · 🗡️ cooldown de robo {steal}min',
       tiers: 'Tiers',
-      upgrade: 'Sube con k!vip checkout <tier>',
+      upgrade: 'Sube con {prefix}vip checkout <tier>',
     },
     tier_line: '{emoji} **{name}** — ${price}/mes',
     perks: {
@@ -330,8 +335,8 @@ export const es: LocaleTree = {
         '🪙 Cuota barata/mes: **{quota}**\n' +
         '📋 Slots de listado: **{listings}**\n' +
         '💠 Marco en showcase: {frame}\n' +
-        '💖 Soulmate (k!soulmate): {soulmate}',
-      footer: 'Mira otro nivel con k!vip perks <tier>',
+        '💖 Soulmate ({prefix}soulmate): {soulmate}',
+      footer: 'Mira otro nivel con {prefix}vip perks <tier>',
     },
     checkout: '💳 Checkout de **{tier}** (${price}/mes): {url}',
     checkout_unavailable: '💳 Checkout no disponible (billing manual). Habla con un admin.',
@@ -349,7 +354,7 @@ export const es: LocaleTree = {
   },
   reroll: {
     vip_required: '🔒 Reroll es un perk VIP (Tomodachi+).',
-    no_summon: '❓ No hay invocación previa para repetir. Usa k!summon primero.',
+    no_summon: '❓ No hay invocación previa para repetir. Usa {prefix}summon primero.',
     none_left: '⏳ Sin rerolls. Se reinician {time}.',
   },
   soulmate: {
@@ -406,19 +411,19 @@ export const es: LocaleTree = {
   coins: {
     balance: '💰 Tienes **{amount}** coins.',
     admin: {
-      usage: '❓ Uso (dueño): `k!coins give|take @user <cantidad>` · `k!coins clear @user`',
+      usage: '❓ Uso (dueño): `{prefix}coins give|take @user <cantidad>` · `{prefix}coins clear @user`',
       gave: '💰 Dados **{amount}** coins a {user}. Nuevo saldo: **{balance}**.',
       took: '💸 Quitados **{amount}** coins a {user}. Nuevo saldo: **{balance}**.',
       cleared: '🧹 La cartera de {user} se reinició a **0**.',
     },
   },
   resetrolls: {
-    usage: '❓ Uso (dueño): `k!resetrolls @user` · `k!resetrolls all`',
+    usage: '❓ Uso (dueño): `{prefix}resetrolls @user` · `{prefix}resetrolls all`',
     one: '🔄 Los rolls de {user} se rellenaron a **{rolls}**.',
     all: '🔄 Rolls reiniciados para **{count}** usuario(s). Se rellenan en el próximo summon.',
   },
   resetclaim: {
-    usage: '❓ Uso (dueño): `k!resetclaim @user`',
+    usage: '❓ Uso (dueño): `{prefix}resetclaim @user`',
     one: '💍 El claim de {user} fue reiniciado — ya puede vincular de nuevo.',
   },
   tribute: {
@@ -438,15 +443,15 @@ export const es: LocaleTree = {
     prefix_set: '✅ Prefijo configurado a `{prefix}`.',
     locale_set: '✅ Idioma por defecto configurado a **{locale}**.',
     interval_set: '✅ Intervalo de rolls configurado a **{minutes}**min.',
-    invalid: '❓ Valor inválido. Uso: `k!setup mode|channel|types|prefix|locale|interval <valor>`.',
+    invalid: '❓ Valor inválido. Uso: `{prefix}setup mode|channel|types|prefix|locale|interval <valor>`.',
     mode_set: '✅ Modo de juego configurado como **{mode}**. Esta elección es permanente.',
     mode_already: '🔒 Este servidor ya usa el modo **{mode}** — no se puede cambiar.',
     mode_usage:
-      '❓ Uso: `k!setup mode guild|global` — **guild**: cartas y coins propios de este servidor; **global**: compartido con todos los servidores globales. Permanente.',
+      '❓ Uso: `{prefix}setup mode guild|global` — **guild**: cartas y coins propios de este servidor; **global**: compartido con todos los servidores globales. Permanente.',
     mode_names: { guild: 'servidor', global: 'global', unset: 'sin configurar' },
     channels: {
       no_owner: '🔒 Solo el dueño del servidor puede gestionar los canales permitidos.',
-      usage: '❓ Uso: `k!setup channels add|remove|list [#canal]`',
+      usage: '❓ Uso: `{prefix}setup channels add|remove|list [#canal]`',
       empty: '📭 Sin restricciones de canal — el bot funciona en todos los canales.',
       list: '🔒 Canales permitidos: {channels}',
       added: '✅ Canal {channel} añadido a la lista de permitidos.',
@@ -486,7 +491,7 @@ export const es: LocaleTree = {
     variant_suffix: ' · variante de #{base}',
   },
   editchar: {
-    usage: '❓ Uso: `k!editchar <id>`',
+    usage: '❓ Uso: `{prefix}editchar <id>`',
     not_found: '❓ Personaje #{id} no encontrado.',
     preview: '✏️ Editando **{name}** #{id}\n📺 {series} · {rarity} · {type} · {nsfw}',
     button_texts: '✏️ Editar nombre/serie',
@@ -496,7 +501,7 @@ export const es: LocaleTree = {
     timeout: '⌛ Edición expirada — ejecuta el comando de nuevo.',
   },
   removechar: {
-    usage: '❓ Uso: `k!removechar <id>`',
+    usage: '❓ Uso: `{prefix}removechar <id>`',
     not_found: '❓ Personaje #{id} no encontrado.',
     confirm:
       '⚠️ ¿Eliminar **{name}** (#{id}) y TODOS los vínculos (haréns, lista de deseos, mercado, subastas)? Es irreversible.',
@@ -517,7 +522,7 @@ export const es: LocaleTree = {
     cancelled: '🚫 Limpieza cancelada.',
     done: '🗑️ **{deleted}** mensajes eliminados de {channel}.{failed, plural, =0 {} other { **{failed}** fallaron (probablemente >14 días).}}',
     timeout: '⌛ Confirmación expirada — ejecuta el comando de nuevo.',
-    usage: '❓ Uso (dueño): `k!clearmessages [#canal]` — escanea y elimina mensajes del bot + comandos.',
+    usage: '❓ Uso (dueño): `{prefix}clearmessages [#canal]` — escanea y elimina mensajes del bot + comandos.',
   },
   command: {
     summon: { description: 'Invoca personajes aleatorios' },
@@ -527,14 +532,15 @@ export const es: LocaleTree = {
     profile: { description: 'Muestra la tarjeta de perfil del servidor' },
     gift: { description: 'Gasta coins para subir el bond de un personaje' },
     boss: { description: 'Muestra el boss del día y abre la pelea (card battle)' },
+    site: { description: 'Recibe el enlace seguro al sitio de Kizuna' },
     duel: { description: 'Reta a otro jugador por coins' },
     higherlower: { description: 'Mayor o menor: adivina cuál vale más' },
     blackjack: { description: 'Juega blackjack contra el crupier por coins' },
     bjtable: { description: 'Abre una mesa de blackjack para hasta 4 jugadores contra el crupier' },
-    bjpvp: { description: 'Blackjack PvP — hasta 4 jugadores apuestan entre sí (sin crupier)' },
+    bjpvp: { description: 'Juega blackjack contra hasta tres jugadores' },
     gallery: { description: 'Vitrina del servidor (bond/rareza/soulmates)' },
     sell: { description: 'Vende un personaje a Kizuna por coins' },
-    market: { description: 'Mercado de precio fijo — explora y compra, filtra por rareza' },
+    market: { description: 'Consulta personajes y cómpralos a precio fijo' },
     auction: { description: 'Subastas (start/bid/info/list/cancel)' },
     trade: { description: 'Intercambia un personaje con otro jugador' },
     vip: { description: 'VIP: resumen, privilegios, estado y checkout' },

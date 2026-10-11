@@ -4,7 +4,7 @@ import { ButtonStyle } from 'discord.js';
 import type { InternalClient } from '../client';
 import { awaitConfirmation } from '../discord/confirmation';
 import { awaitSelection } from '../discord/selection';
-import type { Command, CommandContext } from '../interfaces';
+import type { CommandContext, CommandExecutor } from '../interfaces';
 
 const MINE_FLAGS = new Set(['meu', 'mine', 'mio', 'mío']);
 const THEIRS_FLAGS = new Set(['dele', 'theirs', 'suyo']);
@@ -19,16 +19,16 @@ interface OwnedMatch {
 export class TradeCommands {
   constructor(private readonly api: InternalClient) {}
 
-  get commands(): Command[] {
-    return [{ name: 'trade', aliases: ['troca'], descriptionKey: 'command.trade.description', execute: this.handleTrade }];
+  get commands(): CommandExecutor[] {
+    return [{ name: 'trade', execute: this.handleTrade }];
   }
 
   private handleTrade = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, flags, user, t } = ctx;
-    const guildId = message.guildId!;
-    const target = message.mentions.users.first();
+    const { invocation, args, flags, user, t } = ctx;
+    const guildId = invocation.guildId!;
+    const target = invocation.mentions.users.first();
     if (!target || target.bot || target.id === user.discordId) {
-      await message.reply(t('trade.self'));
+      await invocation.reply(t('trade.self'));
       return;
     }
     const mineFlag = readFlag(flags, MINE_FLAGS);
@@ -37,7 +37,7 @@ export class TradeCommands {
     let theirsToken: string;
     if (mineFlag || theirsFlag) {
       if (!mineFlag || !theirsFlag) {
-        await message.reply(t('error.missing_args', { usage: 'k!trade @user --meu <id ou nome> --dele <id ou nome>' }));
+        await invocation.reply(t('error.missing_args', { usage: '{prefix}trade @user --meu <id ou nome> --dele <id ou nome>' }));
         return;
       }
       mineToken = mineFlag;
@@ -45,7 +45,7 @@ export class TradeCommands {
     } else {
       const ids = args.filter((a) => /^\d+$/.test(a));
       if (ids.length < 2) {
-        await message.reply(t('error.missing_args', { usage: 'k!trade @user <meu_id> <id_dele> (ou --meu <nome> --dele <nome>)' }));
+        await invocation.reply(t('error.missing_args', { usage: '{prefix}trade @user <meu_id> <id_dele> (ou --meu <nome> --dele <nome>)' }));
         return;
       }
       [mineToken, theirsToken] = ids;
@@ -59,7 +59,7 @@ export class TradeCommands {
     if (!theirs) return;
 
     const outcome = await awaitConfirmation({
-      message,
+      invocation,
       content: t('trade.request', {
         from: `<@${user.discordId}>`,
         to: `<@${target.id}>`,
@@ -104,8 +104,8 @@ export class TradeCommands {
     notOwnedKey: string,
     vars?: Record<string, string | number>,
   ): Promise<OwnedMatch | null> {
-    const { message, t } = ctx;
-    const guildId = message.guildId!;
+    const { invocation, t } = ctx;
+    const guildId = invocation.guildId!;
     if (/^\d+$/.test(token)) {
       const owned = await this.api.post<{ ok: true } & OwnedMatch | { ok: false }>('/internal/v1/harem/owned', {
         discordId,
@@ -114,7 +114,7 @@ export class TradeCommands {
         characterId: Number(token),
       });
       if (!owned.ok) {
-        await message.reply(t(notOwnedKey, vars));
+        await invocation.reply(t(notOwnedKey, vars));
         return null;
       }
       return owned;
@@ -126,12 +126,12 @@ export class TradeCommands {
       name: token,
     });
     if (matches.length === 0) {
-      await message.reply(t(notOwnedKey, vars));
+      await invocation.reply(t(notOwnedKey, vars));
       return null;
     }
     if (matches.length === 1) return matches[0];
     const outcome = await awaitSelection({
-      message,
+      invocation,
       content: t('trade.pick_prompt'),
       placeholder: t('trade.pick_placeholder'),
       options: matches.map((h) => ({
@@ -139,7 +139,7 @@ export class TradeCommands {
         description: (h.series ?? t('trade.unknown_series')).slice(0, 100),
         value: h,
       })),
-      authorizedUserId: message.author.id,
+      authorizedUserId: invocation.author.id,
       timeoutMs: 60_000,
       idPrefix: 'trade_pick',
     });

@@ -2,7 +2,7 @@ import { economy } from '@config';
 
 import type { InternalClient } from '../client';
 import { awaitAuthorButton } from '../discord/await-button';
-import type { Command, CommandContext } from '../interfaces';
+import type { CommandContext, CommandExecutor } from '../interfaces';
 
 import { hlBustEmbed, hlButtons, hlCashoutEmbed, type HlCard, hlPlayEmbed } from './hl.presenter';
 
@@ -13,25 +13,25 @@ type HlStart =
 export class HigherLowerCommands {
   constructor(private readonly api: InternalClient) {}
 
-  get commands(): Command[] {
+  get commands(): CommandExecutor[] {
     return [
-      { name: 'higherlower', aliases: ['hl', 'maiormenor'], descriptionKey: 'command.higherlower.description', execute: this.handleHigherLower },
+      { name: 'higherlower', execute: this.handleHigherLower },
     ];
   }
 
   private handleHigherLower = async (ctx: CommandContext): Promise<void> => {
-    const { message, user, t } = ctx;
+    const { invocation, user, t } = ctx;
     const start = await this.api.post<HlStart>('/internal/v1/games/hl/start', {
       discordId: user.discordId,
       username: user.username ?? undefined,
-      guildId: message.guildId,
+      guildId: invocation.guildId,
     });
     if (!start.ok) {
       if (start.reason === 'cooldown') {
-        await message.reply(t('error.cooldown', { seconds: Math.ceil((start.resetMs ?? 0) / 1000) }));
+        await invocation.reply(t('error.cooldown', { seconds: Math.ceil((start.resetMs ?? 0) / 1000) }));
         return;
       }
-      await message.reply(t('error.generic'));
+      await invocation.reply(t('error.generic'));
       return;
     }
     const { roundTimeoutMs, maxRounds } = economy.higherLower;
@@ -41,7 +41,7 @@ export class HigherLowerCommands {
     let earned = start.earned;
     let busted = false;
     let timedOut = false;
-    const prompt = await message.reply({
+    const prompt = await invocation.reply({
       embeds: [hlPlayEmbed(current, next, streak, earned, t)],
       components: [hlButtons(t, false)],
     });
@@ -106,9 +106,9 @@ export class HigherLowerCommands {
       '/internal/v1/games/hl/cashout',
       { discordId: user.discordId, username: user.username ?? undefined, sessionId: start.sessionId },
     );
-    if (cash.payout > 0 && message.channel.isSendable()) {
+    if (cash.payout > 0 && invocation.channel.isSendable()) {
       const key = cash.busted ? 'hl.bust_payout' : 'hl.payout';
-      await message.channel
+      await invocation.channel
         .send(t(key, { user: `<@${user.discordId}>`, streak: cash.streak, amount: cash.payout, banked: cash.earned }))
         .catch(() => undefined);
     } else if (cash.earned === 0) {

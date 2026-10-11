@@ -14,7 +14,7 @@ import {
 import type { CharacterType } from '../character-types';
 import type { InternalClient } from '../client';
 import { SUPPORTED_LOCALES } from '../i18n/i18n.service';
-import type { Command, CommandContext, Locale } from '../interfaces';
+import type { CommandContext, CommandExecutor, Locale } from '../interfaces';
 
 import {
   ADDCHAR_MODAL_ID,
@@ -49,7 +49,6 @@ const RMCHAR_CANCEL_ID = 'rmchar:cancel';
 const CLEARMSG_CONFIRM_ID = 'clearmsg:confirm';
 const CLEARMSG_CANCEL_ID = 'clearmsg:cancel';
 const CLEARMSG_MAX_FETCH = 500;
-const DEFAULT_PREFIX = 'k!';
 
 type CharacterView = {
   id: number;
@@ -63,33 +62,26 @@ type CharacterView = {
 export class AdminCommands {
   constructor(private readonly api: InternalClient) {}
 
-  get commands(): Command[] {
+  get commands(): CommandExecutor[] {
     return [
-      {
-        name: 'setup',
-        aliases: ['config'],
-        descriptionKey: 'command.setup.description',
-        bypassChannelRestriction: true,
-        availableBeforeSetup: true,
-        execute: this.handleSetup,
-      },
-      { name: 'charimage', aliases: ['cimg'], descriptionKey: 'command.charimage.description', execute: this.handleCharImage },
-      { name: 'addchar', aliases: ['novacarta'], descriptionKey: 'command.addchar.description', execute: this.handleAddChar },
-      { name: 'editchar', aliases: ['editarcarta'], descriptionKey: 'command.editchar.description', execute: this.handleEditChar },
-      { name: 'removechar', aliases: ['rmchar', 'delchar'], descriptionKey: 'command.removechar.description', execute: this.handleRemoveChar },
-      { name: 'resetrolls', aliases: ['rrolls', 'resetarrolls'], descriptionKey: 'command.resetrolls.description', execute: this.handleResetRolls },
-      { name: 'resetclaim', aliases: ['rclaim', 'resetarclaim'], descriptionKey: 'command.resetclaim.description', execute: this.handleResetClaim },
-      { name: 'clearmessages', aliases: ['clearmsgs', 'limparmsg'], descriptionKey: 'command.clearmessages.description', execute: this.handleClearMessages },
+      { name: 'setup', execute: this.handleSetup },
+      { name: 'charimage', execute: this.handleCharImage },
+      { name: 'addchar', execute: this.handleAddChar },
+      { name: 'editchar', execute: this.handleEditChar },
+      { name: 'removechar', execute: this.handleRemoveChar },
+      { name: 'resetrolls', execute: this.handleResetRolls },
+      { name: 'resetclaim', execute: this.handleResetClaim },
+      { name: 'clearmessages', execute: this.handleClearMessages },
     ];
   }
 
   private handleSetup = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, guildConfig, t } = ctx;
-    if (!isGuildManager(message.member)) {
-      await message.reply(t('setup.no_permission'));
+    const { invocation, args, guildConfig, t } = ctx;
+    if (!isGuildManager(invocation.member)) {
+      await invocation.reply(t('setup.no_permission'));
       return;
     }
-    const guildId = message.guildId;
+    const guildId = invocation.guildId;
     if (!guildId) return;
 
     const sub = (args[0] ?? '').toLowerCase();
@@ -97,7 +89,7 @@ export class AdminCommands {
 
     if (sub === 'mode') {
       if (value !== 'guild' && value !== 'global') {
-        await message.reply(t('setup.mode_usage'));
+        await invocation.reply(t('setup.mode_usage'));
         return;
       }
       const result = await this.api.post<{ ok: boolean; mode: 'guild' | 'global' }>('/internal/v1/guilds/setup', {
@@ -106,54 +98,54 @@ export class AdminCommands {
         value,
       });
       const mode = t(`setup.mode_names.${result.mode}`);
-      await message.reply(t(result.ok ? 'setup.mode_set' : 'setup.mode_already', { mode }));
+      await invocation.reply(t(result.ok ? 'setup.mode_set' : 'setup.mode_already', { mode }));
       return;
     }
     if (sub === 'channel') {
-      await this.api.post('/internal/v1/guilds/setup', { guildId, channelId: message.channelId, action: 'channel' });
-      await message.reply(t('setup.channel_set', { channel: `<#${message.channelId}>` }));
+      await this.api.post('/internal/v1/guilds/setup', { guildId, channelId: invocation.channelId, action: 'channel' });
+      await invocation.reply(t('setup.channel_set', { channel: `<#${invocation.channelId}>` }));
       return;
     }
     if (sub === 'types') {
       if (!ALLOWED_TYPES.includes(value as (typeof ALLOWED_TYPES)[number])) {
-        await message.reply(t('setup.invalid'));
+        await invocation.reply(t('setup.invalid'));
         return;
       }
       await this.api.post('/internal/v1/guilds/setup', { guildId, action: 'types', value });
-      await message.reply(t('setup.types_set', { types: value }));
+      await invocation.reply(t('setup.types_set', { types: value }));
       return;
     }
     if (sub === 'prefix') {
-      if (!args[1] || args[1].length > 3) {
-        await message.reply(t('setup.invalid'));
+      if (!args[1] || args[1].length > 3 || args[1] === '/') {
+        await invocation.reply(t('setup.invalid'));
         return;
       }
       await this.api.post('/internal/v1/guilds/setup', { guildId, action: 'prefix', value: args[1] });
-      await message.reply(t('setup.prefix_set', { prefix: args[1] }));
+      await invocation.reply(t('setup.prefix_set', { prefix: args[1] }));
       return;
     }
     if (sub === 'locale') {
       if (!SUPPORTED_LOCALES.includes(value as Locale)) {
-        await message.reply(t('setup.invalid'));
+        await invocation.reply(t('setup.invalid'));
         return;
       }
       await this.api.post('/internal/v1/guilds/setup', { guildId, action: 'locale', value });
-      await message.reply(t('setup.locale_set', { locale: value }));
+      await invocation.reply(t('setup.locale_set', { locale: value }));
       return;
     }
     if (sub === 'interval') {
       const minutes = Number(args[1]);
       if (!Number.isInteger(minutes) || minutes < 1) {
-        await message.reply(t('setup.invalid'));
+        await invocation.reply(t('setup.invalid'));
         return;
       }
       await this.api.post('/internal/v1/guilds/setup', { guildId, action: 'interval', minutes });
-      await message.reply(t('setup.interval_set', { minutes }));
+      await invocation.reply(t('setup.interval_set', { minutes }));
       return;
     }
     if (sub === 'channels') {
-      if (!isGuildOwner(message.member)) {
-        await message.reply(t('setup.channels.no_owner'));
+      if (!isGuildOwner(invocation.member)) {
+        await invocation.reply(t('setup.channels.no_owner'));
         return;
       }
       const action = (args[1] ?? '').toLowerCase();
@@ -163,16 +155,16 @@ export class AdminCommands {
           action: 'channels-list',
         });
         if (data.allowedChannelIds.length === 0) {
-          await message.reply(t('setup.channels.empty'));
+          await invocation.reply(t('setup.channels.empty'));
           return;
         }
-        await message.reply(t('setup.channels.list', { channels: data.allowedChannelIds.map((id) => `<#${id}>`).join(', ') }));
+        await invocation.reply(t('setup.channels.list', { channels: data.allowedChannelIds.map((id) => `<#${id}>`).join(', ') }));
         return;
       }
       if (action === 'add' || action === 'remove') {
-        const target = message.mentions.channels.first();
+        const target = invocation.mentions.channels.first();
         if (!target) {
-          await message.reply(t('setup.channels.usage'));
+          await invocation.reply(t('setup.channels.usage'));
           return;
         }
         const data = await this.api.post<{ ok: boolean; reason?: string; allowedChannelIds?: string[] }>(
@@ -180,23 +172,23 @@ export class AdminCommands {
           { guildId, action: action === 'add' ? 'channels-add' : 'channels-remove', targetChannelId: target.id },
         );
         if (!data.ok && data.reason === 'already_added') {
-          await message.reply(t('setup.channels.already_added', { channel: `<#${target.id}>` }));
+          await invocation.reply(t('setup.channels.already_added', { channel: `<#${target.id}>` }));
           return;
         }
         if (!data.ok && data.reason === 'not_in_list') {
-          await message.reply(t('setup.channels.not_in_list', { channel: `<#${target.id}>` }));
+          await invocation.reply(t('setup.channels.not_in_list', { channel: `<#${target.id}>` }));
           return;
         }
-        await message.reply(
+        await invocation.reply(
           t(action === 'add' ? 'setup.channels.added' : 'setup.channels.removed', { channel: `<#${target.id}>` }),
         );
         return;
       }
-      await message.reply(t('setup.channels.usage'));
+      await invocation.reply(t('setup.channels.usage'));
       return;
     }
 
-    await message.reply(
+    await invocation.reply(
       t('setup.current', {
         mode: t(`setup.mode_names.${guildConfig.scopeMode ?? 'unset'}`),
         prefix: guildConfig.prefix,
@@ -213,9 +205,9 @@ export class AdminCommands {
   };
 
   private handleCharImage = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, flags, user, t } = ctx;
+    const { invocation, args, flags, user, t } = ctx;
     if (!isBotOwner(user.discordId)) {
-      await message.reply(t('error.not_owner'));
+      await invocation.reply(t('error.not_owner'));
       return;
     }
     const sub = (args[0] ?? '').toLowerCase();
@@ -223,7 +215,7 @@ export class AdminCommands {
       const characterId = Number(args[1]);
       const url = args[2];
       if (!Number.isInteger(characterId) || !url || !isImageUrl(url)) {
-        await message.reply(t('error.missing_args', { usage: 'k!charimage add <id> <url> [--nsfw] [--primary]' }));
+        await invocation.reply(t('error.missing_args', { usage: '{prefix}charimage add <id> <url> [--nsfw] [--primary]' }));
         return;
       }
       const result = await this.api.post<{ ok: boolean; reason?: string; id?: number; nsfw?: boolean; primary?: boolean }>(
@@ -238,10 +230,10 @@ export class AdminCommands {
         },
       );
       if (!result.ok) {
-        await message.reply(t('charimage.not_found', { id: characterId }));
+        await invocation.reply(t('charimage.not_found', { id: characterId }));
         return;
       }
-      await message.reply(
+      await invocation.reply(
         t('charimage.added', {
           id: result.id ?? 0,
           group: result.nsfw ? '🔞 NSFW' : '🟢 SFW',
@@ -253,7 +245,7 @@ export class AdminCommands {
     if (sub === 'list') {
       const characterId = Number(args[1]);
       if (!Number.isInteger(characterId)) {
-        await message.reply(t('error.missing_args', { usage: 'k!charimage list <id>' }));
+        await invocation.reply(t('error.missing_args', { usage: '{prefix}charimage list <id>' }));
         return;
       }
       const { images } = await this.api.post<{ images: Array<{ id: number; url: string; nsfw: boolean; primary: boolean }> }>(
@@ -261,10 +253,10 @@ export class AdminCommands {
         { actorDiscordId: user.discordId, action: 'list', characterId },
       );
       if (images.length === 0) {
-        await message.reply(t('charimage.empty', { id: characterId }));
+        await invocation.reply(t('charimage.empty', { id: characterId }));
         return;
       }
-      await message.reply({
+      await invocation.reply({
         embeds: [
           new EmbedBuilder()
             .setTitle(t('charimage.list_title', { id: characterId }))
@@ -276,7 +268,7 @@ export class AdminCommands {
     if (sub === 'remove') {
       const imageId = Number(args[1]);
       if (!Number.isInteger(imageId)) {
-        await message.reply(t('error.missing_args', { usage: 'k!charimage remove <id_imagem>' }));
+        await invocation.reply(t('error.missing_args', { usage: '{prefix}charimage remove <id_imagem>' }));
         return;
       }
       const { ok } = await this.api.post<{ ok: boolean }>('/internal/v1/admin/charimage', {
@@ -284,22 +276,22 @@ export class AdminCommands {
         action: 'remove',
         imageId,
       });
-      await message.reply(ok ? t('charimage.removed', { id: imageId }) : t('charimage.image_not_found'));
+      await invocation.reply(ok ? t('charimage.removed', { id: imageId }) : t('charimage.image_not_found'));
       return;
     }
-    await message.reply(t('error.missing_args', { usage: 'k!charimage add|list|remove ...' }));
+    await invocation.reply(t('error.missing_args', { usage: '{prefix}charimage add|list|remove ...' }));
   };
 
   private handleAddChar = async (ctx: CommandContext): Promise<void> => {
-    const { message, user, t } = ctx;
+    const { invocation, user, t } = ctx;
     if (!isBotOwner(user.discordId)) {
-      await message.reply(t('error.not_owner'));
+      await invocation.reply(t('error.not_owner'));
       return;
     }
     const draft: AddCharDraft = { nsfw: false };
-    const reply = await message.reply({ content: t('addchar.prompt'), components: buildAddCharComponents(draft, t) });
+    const reply = await invocation.reply({ content: t('addchar.prompt'), components: buildAddCharComponents(draft, t) });
     const collector = reply.createMessageComponentCollector({
-      filter: (i) => i.user.id === message.author.id,
+      filter: (i) => i.user.id === invocation.author.id,
       time: 180_000,
     });
     collector.on('collect', async (i) => {
@@ -317,7 +309,7 @@ export class AdminCommands {
       let submit;
       try {
         submit = await i.awaitModalSubmit({
-          filter: (m) => m.customId === ADDCHAR_MODAL_ID && m.user.id === message.author.id,
+          filter: (m) => m.customId === ADDCHAR_MODAL_ID && m.user.id === invocation.author.id,
           time: 300_000,
         });
       } catch {
@@ -350,14 +342,14 @@ export class AdminCommands {
   };
 
   private handleEditChar = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, user, t } = ctx;
+    const { invocation, args, user, t } = ctx;
     if (!isBotOwner(user.discordId)) {
-      await message.reply(t('error.not_owner'));
+      await invocation.reply(t('error.not_owner'));
       return;
     }
     const id = Number(args[0]);
     if (!Number.isInteger(id) || id <= 0) {
-      await message.reply(t('editchar.usage'));
+      await invocation.reply(t('editchar.usage'));
       return;
     }
     const found = await this.api.post<{ ok: boolean; character?: CharacterView }>('/internal/v1/admin/character/get', {
@@ -365,7 +357,7 @@ export class AdminCommands {
       characterId: id,
     });
     if (!found.ok || !found.character) {
-      await message.reply(t('editchar.not_found', { id }));
+      await invocation.reply(t('editchar.not_found', { id }));
       return;
     }
     const draft: EditCharDraft = {
@@ -375,12 +367,12 @@ export class AdminCommands {
       name: found.character.name,
       series: found.character.series,
     };
-    const reply = await message.reply({
+    const reply = await invocation.reply({
       content: editCharPreview(draft, id, t),
       components: buildEditCharComponents(draft, t),
     });
     const collector = reply.createMessageComponentCollector({
-      filter: (i) => i.user.id === message.author.id,
+      filter: (i) => i.user.id === invocation.author.id,
       time: 180_000,
     });
     collector.on('collect', async (i) => {
@@ -394,7 +386,7 @@ export class AdminCommands {
         await i.showModal(buildEditCharModal(draft, t));
         try {
           const submit = await i.awaitModalSubmit({
-            filter: (m) => m.customId === EDITCHAR_MODAL_ID && m.user.id === message.author.id,
+            filter: (m) => m.customId === EDITCHAR_MODAL_ID && m.user.id === invocation.author.id,
             time: 300_000,
           });
           draft.name = submit.fields.getTextInputValue('name').trim() || draft.name;
@@ -434,14 +426,14 @@ export class AdminCommands {
   };
 
   private handleRemoveChar = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, user, t } = ctx;
+    const { invocation, args, user, t } = ctx;
     if (!isBotOwner(user.discordId)) {
-      await message.reply(t('error.not_owner'));
+      await invocation.reply(t('error.not_owner'));
       return;
     }
     const id = Number(args[0]);
     if (!Number.isInteger(id) || id <= 0) {
-      await message.reply(t('removechar.usage'));
+      await invocation.reply(t('removechar.usage'));
       return;
     }
     const found = await this.api.post<{ ok: boolean; character?: CharacterView }>('/internal/v1/admin/character/get', {
@@ -449,14 +441,14 @@ export class AdminCommands {
       characterId: id,
     });
     if (!found.ok || !found.character) {
-      await message.reply(t('removechar.not_found', { id }));
+      await invocation.reply(t('removechar.not_found', { id }));
       return;
     }
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setCustomId(RMCHAR_CONFIRM_ID).setStyle(ButtonStyle.Danger).setLabel(t('removechar.confirm_button')),
       new ButtonBuilder().setCustomId(RMCHAR_CANCEL_ID).setStyle(ButtonStyle.Secondary).setLabel(t('common.cancel')),
     );
-    const reply = await message.reply({
+    const reply = await invocation.reply({
       content: t('removechar.confirm', { name: found.character.name, id }),
       components: [row],
     });
@@ -464,7 +456,7 @@ export class AdminCommands {
     try {
       interaction = await reply.awaitMessageComponent({
         componentType: ComponentType.Button,
-        filter: (i) => i.user.id === message.author.id,
+        filter: (i) => i.user.id === invocation.author.id,
         time: 60_000,
       });
     } catch {
@@ -488,9 +480,9 @@ export class AdminCommands {
   };
 
   private handleResetRolls = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, user, guildConfig, t } = ctx;
+    const { invocation, args, user, guildConfig, t } = ctx;
     if (!isBotOwner(user.discordId)) {
-      await message.reply(t('error.not_owner'));
+      await invocation.reply(t('error.not_owner'));
       return;
     }
     const sub = (args[0] ?? '').toLowerCase();
@@ -499,63 +491,63 @@ export class AdminCommands {
         actorDiscordId: user.discordId,
         all: true,
       });
-      await message.reply(t('resetrolls.all', { count }));
+      await invocation.reply(t('resetrolls.all', { count }));
       return;
     }
-    const target = message.mentions.users.first();
+    const target = invocation.mentions.users.first();
     if (!target) {
-      await message.reply(t('resetrolls.usage'));
+      await invocation.reply(t('resetrolls.usage'));
       return;
     }
     const result = await this.api.post<{ rollsLeft: number }>('/internal/v1/admin/reset-rolls', {
       actorDiscordId: user.discordId,
       targetDiscordId: target.id,
       targetUsername: target.username,
-      guildId: message.guildId,
+      guildId: invocation.guildId,
       rollIntervalMinutes: guildConfig.rollIntervalMinutes,
     });
-    await message.reply(t('resetrolls.one', { user: `<@${target.id}>`, rolls: result.rollsLeft }));
+    await invocation.reply(t('resetrolls.one', { user: `<@${target.id}>`, rolls: result.rollsLeft }));
   };
 
   private handleResetClaim = async (ctx: CommandContext): Promise<void> => {
-    const { message, user, t } = ctx;
+    const { invocation, user, t } = ctx;
     if (!isBotOwner(user.discordId)) {
-      await message.reply(t('error.not_owner'));
+      await invocation.reply(t('error.not_owner'));
       return;
     }
-    const target = message.mentions.users.first();
+    const target = invocation.mentions.users.first();
     if (!target) {
-      await message.reply(t('resetclaim.usage'));
+      await invocation.reply(t('resetclaim.usage'));
       return;
     }
     await this.api.post('/internal/v1/admin/reset-claim', {
       actorDiscordId: user.discordId,
       targetDiscordId: target.id,
       targetUsername: target.username,
-      guildId: message.guildId,
+      guildId: invocation.guildId,
     });
-    await message.reply(t('resetclaim.one', { user: `<@${target.id}>` }));
+    await invocation.reply(t('resetclaim.one', { user: `<@${target.id}>` }));
   };
 
   private handleClearMessages = async (ctx: CommandContext): Promise<void> => {
-    const { message, user, guildConfig, t } = ctx;
+    const { invocation, user, guildConfig, t } = ctx;
     if (!isBotOwner(user.discordId)) {
-      await message.reply(t('clearmessages.no_permission'));
+      await invocation.reply(t('clearmessages.no_permission'));
       return;
     }
-    const mentionedChannel = message.mentions.channels.first();
-    const targetChannel = (mentionedChannel ?? message.channel) as TextChannel;
+    const mentionedChannel = invocation.mentions.channels.first();
+    const targetChannel = (mentionedChannel ?? invocation.channel) as TextChannel;
     if (targetChannel.type !== ChannelType.GuildText && targetChannel.type !== ChannelType.GuildVoice) {
-      await message.reply(t('clearmessages.not_text_channel'));
+      await invocation.reply(t('clearmessages.not_text_channel'));
       return;
     }
-    const prefix = guildConfig.prefix || DEFAULT_PREFIX;
-    const botId = message.client.user?.id;
+    const prefix = guildConfig.prefix;
+    const botId = invocation.client.user?.id;
     if (!botId) {
-      await message.reply(t('error.generic'));
+      await invocation.reply(t('error.generic'));
       return;
     }
-    const statusMsg = await message.reply(t('clearmessages.fetching'));
+    const statusMsg = await invocation.reply(t('clearmessages.fetching'));
     const matchedMessages: { id: string; authorId: string }[] = [];
     let lastId: string | undefined;
     while (matchedMessages.length < CLEARMSG_MAX_FETCH) {
@@ -595,7 +587,7 @@ export class AdminCommands {
     try {
       interaction = await statusMsg.awaitMessageComponent({
         componentType: ComponentType.Button,
-        filter: (i) => i.user.id === message.author.id,
+        filter: (i) => i.user.id === invocation.author.id,
         time: 60_000,
       });
     } catch {

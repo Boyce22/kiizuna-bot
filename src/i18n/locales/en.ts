@@ -34,8 +34,8 @@ export const en = {
     footer: '#{id} • {series} • {rarity}',
     wishlist_ping: '🔔 {users}, **{name}** from your wishlist just appeared!',
     anime_wishlist_ping: '🎌 {users}, **{name}** (from **{series}**, your anime wishlist) just appeared!',
-    usage: 'k!summon <waifu|husbando|all> [--nsfw] [--target <anime>]',
-    usage_target: 'k!summon ... --target <anime>',
+    usage: '{prefix}summon <waifu|husbando|all> [--nsfw] [--target <anime>]',
+    usage_target: '{prefix}summon ... --target <anime>',
   },
   bind: {
     none_active: 'There is no active summon to bind here.',
@@ -84,7 +84,7 @@ export const en = {
     pick_prompt: '🔎 Found more than one match — pick one:',
     pick_timeout: '⌛ Selection timed out.',
     usage:
-      '❓ Usage: `k!wishlist add|remove <name>` (or `--name <name> --anime <series>`), `k!wishlist clear` or `k!wishlist list`.',
+      '❓ Usage: `{prefix}wishlist add|remove <name>` (or `--name <name> --anime <series>`), `{prefix}wishlist clear` or `{prefix}wishlist list`.',
     list: { title: "{user}'s wishlist", empty: '📭 Your wishlist is empty.' },
     clear: {
       confirm: '⚠️ Clear your **entire** wishlist ({count} items)? This cannot be undone.',
@@ -94,7 +94,7 @@ export const en = {
     },
   },
   animewishlist: {
-    not_set: "📭 You haven't picked an anime yet. Use `k!animewishlist <name>`.",
+    not_set: "📭 You haven't picked an anime yet. Use `{prefix}animewishlist <name>`.",
     current: '🎌 Your anime wishlist pick: **{series}**.',
     current_locked: '🎌 Your anime wishlist pick: **{series}**. You can only change/clear it {time}.',
     locked: '🔒 You can only change or clear your anime wishlist pick {time}.',
@@ -143,6 +143,11 @@ export const en = {
     no_coins: '💸 You do not have enough coins.',
     min: '❓ Minimum **{min}** coins (= 1 bond).',
   },
+  site: {
+    prompt: '🔗 Open Kizuna on the web to see your collection and account.',
+    open: 'Open on the web',
+    link: '🔗 Your link (valid for 15 min, only opens on your account): {url}',
+  },
   boss: {
     title: '👹 Boss of the day',
     hp: '❤️ {hp} HP',
@@ -182,7 +187,7 @@ export const en = {
   },
   blackjack: {
     title: '🃏 You vs Dealer · 💰 {bet}',
-    usage: '❓ Usage: `k!blackjack <bet>` (between {min} and {max} coins).',
+    usage: '❓ Usage: `{prefix}blackjack <bet>` (between {min} and {max} coins).',
     no_coins: "💸 You don't have enough coins for that bet.",
     dealer: 'Dealer',
     you: 'You',
@@ -208,7 +213,7 @@ export const en = {
     cancelled_title: '🪑 Table Closed',
     cancelled_line1: '🚫 The host closed the table',
     cancelled_line2: '💰 All bets were refunded',
-    cancelled_footer: 'Try again with `k!{command} <bet>`',
+    cancelled_footer: 'Try again with `{prefix}{command} <bet>`',
     your_turn_ping: '🎲 {user}, it’s your turn!',
     only_host: '🚫 Only the host can start the table early.',
     already_in: '🚫 You are already at this table.',
@@ -230,7 +235,7 @@ export const en = {
     not_enough_title: '🪑 Table Closed',
     not_enough_line1: '🚫 Nobody else joined in time',
     not_enough_line2: '💰 Your **{bet}** coin bet has been refunded',
-    not_enough_footer: 'Try again with `k!bjpvp <bet>`',
+    not_enough_footer: 'Try again with `{prefix}bjpvp <bet>`',
   },
   gallery: {
     title: { bond: '💞 Strongest bonds', rarity: '💎 The rarest', soulmates: '💖 Soulmates' },
@@ -261,7 +266,7 @@ export const en = {
     buy_select_placeholder: 'Choose a character to buy…',
     buy_timeout: '⌛ Selection timed out.',
     buy_error: '⚠️ Something went wrong with the purchase. Try again.',
-    filter_usage: 'k!market [rare|epic|legendary|mythic] — or --rarity <rarity>',
+    filter_usage: '{prefix}market [rare|epic|legendary|mythic] — or --rarity <rarity>',
   },
   marketAdmin: {
     char_not_found: '❓ Character #{id} not found.',
@@ -311,7 +316,7 @@ export const en = {
       title: '✨ VIP — current tier: {tier}',
       current: '🎲 {rolls} rolls · ⭐ {wishlist} wishlist slots · 💍 {cooldown}min claim cooldown · 🗡️ {steal}min steal cooldown',
       tiers: 'Tiers',
-      upgrade: 'Upgrade with k!vip checkout <tier>',
+      upgrade: 'Upgrade with {prefix}vip checkout <tier>',
     },
     tier_line: '{emoji} **{name}** — ${price}/mo',
     perks: {
@@ -329,8 +334,8 @@ export const en = {
         '🪙 Cheap quota/month: **{quota}**\n' +
         '📋 Listing slots: **{listings}**\n' +
         '💠 Showcase frame: {frame}\n' +
-        '💖 Soulmate (k!soulmate): {soulmate}',
-      footer: 'See another level with k!vip perks <tier>',
+        '💖 Soulmate ({prefix}soulmate): {soulmate}',
+      footer: 'See another level with {prefix}vip perks <tier>',
     },
     checkout: '💳 Checkout for **{tier}** (${price}/mo): {url}',
     checkout_unavailable: '💳 Checkout is not available (manual billing). Ask an admin.',
@@ -348,7 +353,7 @@ export const en = {
   },
   reroll: {
     vip_required: '🔒 Reroll is a VIP perk (Tomodachi+).',
-    no_summon: '❓ No previous summon to reroll. Use k!summon first.',
+    no_summon: '❓ No previous summon to reroll. Use {prefix}summon first.',
     none_left: '⏳ No rerolls left. They reset {time}.',
   },
   soulmate: {
@@ -405,19 +410,19 @@ export const en = {
   coins: {
     balance: '💰 You have **{amount}** coins.',
     admin: {
-      usage: '❓ Owner usage: `k!coins give|take @user <amount>` · `k!coins clear @user`',
+      usage: '❓ Owner usage: `{prefix}coins give|take @user <amount>` · `{prefix}coins clear @user`',
       gave: '💰 Gave **{amount}** coins to {user}. New balance: **{balance}**.',
       took: '💸 Removed **{amount}** coins from {user}. New balance: **{balance}**.',
       cleared: '🧹 {user}\'s wallet was reset to **0**.',
     },
   },
   resetrolls: {
-    usage: '❓ Usage (owner): `k!resetrolls @user` · `k!resetrolls all`',
+    usage: '❓ Usage (owner): `{prefix}resetrolls @user` · `{prefix}resetrolls all`',
     one: '🔄 {user}\'s rolls refilled to **{rolls}**.',
     all: '🔄 Rolls reset for **{count}** user(s). They refill on the next summon.',
   },
   resetclaim: {
-    usage: '❓ Usage (owner): `k!resetclaim @user`',
+    usage: '❓ Usage (owner): `{prefix}resetclaim @user`',
     one: '💍 {user}\'s claim has been reset — they can bind again now.',
   },
   tribute: {
@@ -437,15 +442,15 @@ export const en = {
     prefix_set: '✅ Prefix set to `{prefix}`.',
     locale_set: '✅ Default language set to **{locale}**.',
     interval_set: '✅ Roll interval set to **{minutes}**min.',
-    invalid: '❓ Invalid value. Usage: `k!setup mode|channel|types|prefix|locale|interval <value>`.',
+    invalid: '❓ Invalid value. Usage: `{prefix}setup mode|channel|types|prefix|locale|interval <value>`.',
     mode_set: '✅ Game mode set to **{mode}**. This choice is permanent.',
     mode_already: '🔒 This server already uses the **{mode}** mode — it cannot be changed.',
     mode_usage:
-      '❓ Usage: `k!setup mode guild|global` — **guild**: this server has its own cards and coins; **global**: shared with every global server. Permanent.',
+      '❓ Usage: `{prefix}setup mode guild|global` — **guild**: this server has its own cards and coins; **global**: shared with every global server. Permanent.',
     mode_names: { guild: 'server', global: 'global', unset: 'not configured' },
     channels: {
       no_owner: '🔒 Only the server owner can manage allowed channels.',
-      usage: '❓ Usage: `k!setup channels add|remove|list [#channel]`',
+      usage: '❓ Usage: `{prefix}setup channels add|remove|list [#channel]`',
       empty: '📭 No channel restrictions — the bot works in all channels.',
       list: '🔒 Allowed channels: {channels}',
       added: '✅ Channel {channel} added to the allowed list.',
@@ -485,7 +490,7 @@ export const en = {
     variant_suffix: ' · variant of #{base}',
   },
   editchar: {
-    usage: '❓ Usage: `k!editchar <id>`',
+    usage: '❓ Usage: `{prefix}editchar <id>`',
     not_found: '❓ Character #{id} not found.',
     preview: '✏️ Editing **{name}** #{id}\n📺 {series} · {rarity} · {type} · {nsfw}',
     button_texts: '✏️ Edit name/series',
@@ -495,7 +500,7 @@ export const en = {
     timeout: '⌛ Edit timed out — run the command again.',
   },
   removechar: {
-    usage: '❓ Usage: `k!removechar <id>`',
+    usage: '❓ Usage: `{prefix}removechar <id>`',
     not_found: '❓ Character #{id} not found.',
     confirm:
       '⚠️ Remove **{name}** (#{id}) and ALL links (harems, wishlist, market, auctions)? This is irreversible.',
@@ -516,7 +521,7 @@ export const en = {
     cancelled: '🚫 Cleanup cancelled.',
     done: '🗑️ **{deleted}** messages deleted from {channel}.{failed, plural, =0 {} other { **{failed}** failed (likely >14 days old).}}',
     timeout: '⌛ Confirmation timed out — run the command again.',
-    usage: '❓ Usage (owner): `k!clearmessages [#channel]` — scan & delete bot messages + commands.',
+    usage: '❓ Usage (owner): `{prefix}clearmessages [#channel]` — scan & delete bot messages + commands.',
   },
   command: {
     summon: { description: 'Summon random characters' },
@@ -527,14 +532,15 @@ export const en = {
     profile: { description: 'Show a server profile card' },
     gift: { description: 'Spend coins to raise a character bond' },
     boss: { description: 'Show the boss of the day and open the fight (card battle)' },
+    site: { description: 'Get the secure link to the Kizuna website' },
     duel: { description: 'Challenge another player for coins' },
     higherlower: { description: 'Higher or lower: guess which is worth more' },
     blackjack: { description: 'Play blackjack against the dealer for coins' },
     bjtable: { description: 'Host a blackjack table for up to 4 players against the dealer' },
-    bjpvp: { description: 'Blackjack PvP — up to 4 players bet against each other (no dealer)' },
+    bjpvp: { description: 'Play blackjack against up to three other players' },
     gallery: { description: 'Server showcase (bond/rarity/soulmates)' },
     sell: { description: 'Sell a character to Kizuna for coins' },
-    market: { description: 'Fixed-price market — browse & buy, filter by rarity' },
+    market: { description: 'Browse characters and buy them at fixed prices' },
     auction: { description: 'Auctions (start/bid/info/list/cancel)' },
     trade: { description: 'Trade a character with another player' },
     vip: { description: 'VIP overview, perks, status and checkout' },

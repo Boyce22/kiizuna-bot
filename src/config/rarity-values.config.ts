@@ -1,4 +1,4 @@
-// Valores e pesos por raridade — fonte única para mercado, k!sell e duelo.
+// Valores e pesos por raridade — fonte única para mercado, {prefix}sell e duelo.
 import type { Rarity } from './vip-tiers.config';
 
 export const RARITIES: Rarity[] = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'];
@@ -66,7 +66,7 @@ export function rarityFromFavourites(favourites: number): Rarity {
 
 export interface RarityValue {
   floor: number; // lance mínimo / preço-piso (leilão e mercado P2P)
-  kizunaPrice: number; // venda direta ao bot (k!sell), valor fixo (baixo de propósito)
+  kizunaPrice: number; // venda direta ao bot ({prefix}sell), valor fixo (baixo de propósito)
   duelWeight: number; // peso no duelo
 }
 
@@ -79,7 +79,7 @@ export const RARITY_VALUES: Record<Rarity, RarityValue> = {
   mythic: { floor: 5000, kizunaPrice: 2000, duelWeight: 40 },
 };
 
-// Multiplicador bond→atributos no k!gift: cada gift gera um "orçamento" de pontos
+// Multiplicador bond→atributos no {prefix}gift: cada gift gera um "orçamento" de pontos
 // (= pontos de bond ganhos × este multiplicador), repartido aleatoriamente entre
 // atk/speed/def. Raridade maior converte mais bond em atributos. Tunável aqui.
 export const RARITY_ATTR_MULT: Record<Rarity, number> = {

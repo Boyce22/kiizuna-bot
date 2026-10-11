@@ -3,6 +3,7 @@ import type { Guild } from 'discord.js';
 import type { ThiefEvent } from '../bind-types';
 import type { InternalClient } from '../client';
 import type { TranslateFn } from '../interfaces';
+import { contextualLogger } from '../observability/context';
 
 export interface ThiefRoleStore {
   setThiefRoleId(guildId: string, roleId: string): Promise<void>;
@@ -54,7 +55,10 @@ export async function applyThiefCrown(
       roleId = role.id;
       await store.setThiefRoleId(guild.id, role.id);
     } catch (err) {
-      console.warn('thief role create failed', err);
+      contextualLogger({ component: 'thief-role', guildId: guild.id }).warn(
+        { err, action: 'create' },
+        'thief role operation failed',
+      );
       return;
     }
   }
@@ -67,6 +71,9 @@ export async function applyThiefCrown(
     const member = await guild.members.fetch(crown.newThiefDiscordId).catch(() => null);
     if (member) await member.roles.add(roleId).catch(() => undefined);
   } catch (err) {
-    console.warn('thief role assign failed', err);
+    contextualLogger({ component: 'thief-role', guildId: guild.id }).warn(
+      { err, action: 'assign' },
+      'thief role operation failed',
+    );
   }
 }

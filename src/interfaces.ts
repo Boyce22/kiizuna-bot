@@ -1,4 +1,4 @@
-import type { Message } from 'discord.js';
+import type { CommandInvocation } from './command-invocation';
 
 export type TranslateFn = (key: string, vars?: Record<string, string | number>) => string;
 
@@ -29,7 +29,8 @@ export interface GuildConfigView {
 }
 
 export interface CommandContext {
-  message: Message;
+  /** Entrada normalizada para mensagens com prefixo e interações nativas. */
+  invocation: CommandInvocation;
   args: string[];
   flags: Record<string, string | boolean>;
   user: BotUser;
@@ -38,12 +39,15 @@ export interface CommandContext {
   t: TranslateFn;
 }
 
-export interface Command {
+export interface CommandExecutor {
   name: string;
+  execute(ctx: CommandContext): Promise<void> | void;
+}
+
+export interface Command extends CommandExecutor {
   aliases?: string[];
-  descriptionKey?: string;
+  descriptionKey: string;
   bypassChannelRestriction?: boolean;
   /** Funciona antes do servidor escolher o modo de jogo (setup, ajuda, idioma). */
   availableBeforeSetup?: boolean;
-  execute(ctx: CommandContext): Promise<void> | void;
 }

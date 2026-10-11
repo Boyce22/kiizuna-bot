@@ -3,7 +3,7 @@ import { discordRelative, isBotOwner } from '@utils';
 import { EmbedBuilder } from 'discord.js';
 
 import type { InternalClient } from '../client';
-import type { Command, CommandContext } from '../interfaces';
+import type { CommandContext, CommandExecutor } from '../interfaces';
 
 const PAID_TIERS = TIER_ORDER.filter((t): t is Exclude<VipTierKey, 'none'> => t !== 'none');
 const isPaidTier = (s: string): s is Exclude<VipTierKey, 'none'> => (PAID_TIERS as string[]).includes(s);
@@ -11,15 +11,15 @@ const isPaidTier = (s: string): s is Exclude<VipTierKey, 'none'> => (PAID_TIERS 
 export class VipCommands {
   constructor(private readonly api: InternalClient) {}
 
-  get commands(): Command[] {
+  get commands(): CommandExecutor[] {
     return [
-      { name: 'vip', descriptionKey: 'command.vip.description', execute: this.handleVip },
-      { name: 'vip-admin', aliases: ['vipadmin'], descriptionKey: 'command.vipAdmin.description', execute: this.handleVipAdmin },
+      { name: 'vip', execute: this.handleVip },
+      { name: 'vip-admin', execute: this.handleVipAdmin },
     ];
   }
 
   private handleVip = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, user, t } = ctx;
+    const { invocation, args, user, t } = ctx;
     const sub = (args[0] ?? '').toLowerCase();
 
     if (sub === 'status') {
@@ -33,10 +33,10 @@ export class VipCommands {
         } | null;
       }>('/internal/v1/vip/subscription', { discordId: user.discordId, username: user.username ?? undefined });
       if (!subscription || subscription.status !== 'active') {
-        await message.reply(t('vip.status.none'));
+        await invocation.reply(t('vip.status.none'));
         return;
       }
-      await message.reply(
+      await invocation.reply(
         t('vip.status.active', {
           tier: VIP_TIERS[subscription.vipTier].name,
           provider: subscription.provider,
@@ -77,14 +77,14 @@ export class VipCommands {
           }),
         )
         .setFooter({ text: t('vip.perks.footer') });
-      await message.reply({ embeds: [embed] });
+      await invocation.reply({ embeds: [embed] });
       return;
     }
 
     if (sub === 'checkout') {
       const tier = (args[1] ?? '').toLowerCase();
       if (!isPaidTier(tier)) {
-        await message.reply(t('vip.invalid_tier'));
+        await invocation.reply(t('vip.invalid_tier'));
         return;
       }
       const result = await this.api.post<{ ok: boolean; url: string | null }>('/internal/v1/vip/checkout', {
@@ -93,10 +93,10 @@ export class VipCommands {
         tier,
       });
       if (!result.url) {
-        await message.reply(t('vip.checkout_unavailable'));
+        await invocation.reply(t('vip.checkout_unavailable'));
         return;
       }
-      await message.reply(t('vip.checkout', { tier: VIP_TIERS[tier].name, price: VIP_TIERS[tier].priceUsd, url: result.url }));
+      await invocation.reply(t('vip.checkout', { tier: VIP_TIERS[tier].name, price: VIP_TIERS[tier].priceUsd, url: result.url }));
       return;
     }
 
@@ -121,22 +121,22 @@ export class VipCommands {
       )
       .addFields({ name: t('vip.overview.tiers'), value: tierLines.join('\n') })
       .setFooter({ text: t('vip.overview.upgrade') });
-    await message.reply({ embeds: [embed] });
+    await invocation.reply({ embeds: [embed] });
   };
 
   private handleVipAdmin = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, user, t } = ctx;
+    const { invocation, args, user, t } = ctx;
     if (!isBotOwner(user.discordId)) {
-      await message.reply(t('error.not_owner'));
+      await invocation.reply(t('error.not_owner'));
       return;
     }
     const sub = (args[0] ?? '').toLowerCase();
-    const target = message.mentions.users.first();
+    const target = invocation.mentions.users.first();
     if (sub === 'grant') {
       const tier = (args.find((a) => isPaidTier(a.toLowerCase())) ?? '').toLowerCase();
       const days = Number(args.find((a) => /^\d+$/.test(a)) ?? 30);
       if (!target || !isPaidTier(tier)) {
-        await message.reply(t('error.missing_args', { usage: 'k!vip-admin grant @user <tier> [dias]' }));
+        await invocation.reply(t('error.missing_args', { usage: '{prefix}vip-admin grant @user <tier> [dias]' }));
         return;
       }
       await this.api.post('/internal/v1/vip/admin/grant', {
@@ -145,12 +145,12 @@ export class VipCommands {
         tier,
         days,
       });
-      await message.reply(t('vip.granted', { user: `<@${target.id}>`, tier: VIP_TIERS[tier].name, days }));
+      await invocation.reply(t('vip.granted', { user: `<@${target.id}>`, tier: VIP_TIERS[tier].name, days }));
       return;
     }
     if (sub === 'lookup') {
       if (!target) {
-        await message.reply(t('error.missing_args', { usage: 'k!vip-admin lookup @user' }));
+        await invocation.reply(t('error.missing_args', { usage: '{prefix}vip-admin lookup @user' }));
         return;
       }
       const { subscription } = await this.api.post<{
@@ -162,10 +162,10 @@ export class VipCommands {
         } | null;
       }>('/internal/v1/vip/admin/lookup', { actorDiscordId: user.discordId, targetDiscordId: target.id });
       if (!subscription) {
-        await message.reply(t('vip.lookup.none', { user: `<@${target.id}>` }));
+        await invocation.reply(t('vip.lookup.none', { user: `<@${target.id}>` }));
         return;
       }
-      await message.reply(
+      await invocation.reply(
         t('vip.lookup.found', {
           user: `<@${target.id}>`,
           tier: VIP_TIERS[subscription.vipTier].name,
@@ -176,6 +176,6 @@ export class VipCommands {
       );
       return;
     }
-    await message.reply(t('error.missing_args', { usage: 'k!vip-admin grant|lookup @user ...' }));
+    await invocation.reply(t('error.missing_args', { usage: '{prefix}vip-admin grant|lookup @user ...' }));
   };
 }

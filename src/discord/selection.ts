@@ -6,6 +6,8 @@ import {
   type StringSelectMenuInteraction,
 } from 'discord.js';
 
+import type { CommandInvocation } from '../command-invocation';
+
 /**
  * Resultado de um fluxo de escolha via dropdown (item escolhido ou timeout). Mantém a
  * referência ao `interaction`/`prompt` para que o **comando** renderize o estado final — a
@@ -22,8 +24,8 @@ export interface SelectionOption<T> {
 }
 
 export interface SelectionParams<T> {
-  /** Mensagem original (para `reply`). */
-  message: Message;
+  /** Invocação original (mensagem ou slash command). */
+  invocation: CommandInvocation;
   /** Texto do prompt de escolha. */
   content: string;
   placeholder: string;
@@ -57,7 +59,7 @@ export async function awaitSelection<T>(params: SelectionParams<T>): Promise<Sel
     );
   const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select);
 
-  const prompt = await params.message.reply({ content: params.content, components: [row] });
+  const prompt = await params.invocation.reply({ content: params.content, components: [row] });
 
   try {
     const interaction = await prompt.awaitMessageComponent({

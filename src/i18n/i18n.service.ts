@@ -37,9 +37,17 @@ export function translate(
   return interpolate(value, vars);
 }
 
-// Cria uma função `t` vinculada a um locale (injetada no CommandContext).
-export function makeTranslator(locale: Locale): TranslateFn {
-  return (key, vars) => translate(key, locale, vars);
+// Cria uma função `t` vinculada a um locale e a variáveis padrão do contexto.
+export function makeTranslator(
+  locale: Locale,
+  defaults: Record<string, string | number> = {},
+): TranslateFn {
+  return (key, vars) => {
+    const merged = { ...defaults, ...vars };
+    const rendered = translate(key, locale, merged);
+    const prefix = typeof merged.prefix === 'string' ? merged.prefix : undefined;
+    return prefix ? rendered.split('{prefix}').join(prefix) : rendered;
+  };
 }
 
 // Resolve o locale efetivo: User.locale → GuildConfig.defaultLocale → fallback.

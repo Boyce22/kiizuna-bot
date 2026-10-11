@@ -1,7 +1,7 @@
 import { discordRelative, isBotOwner } from '@utils';
 
 import type { InternalClient } from '../client';
-import type { Command, CommandContext } from '../interfaces';
+import type { CommandContext, CommandExecutor } from '../interfaces';
 
 /**
  * Camada de comando do módulo economy. Regras na API interna; aqui só I/O Discord.
@@ -9,35 +9,35 @@ import type { Command, CommandContext } from '../interfaces';
 export class EconomyCommands {
   constructor(private readonly api: InternalClient) {}
 
-  get commands(): Command[] {
+  get commands(): CommandExecutor[] {
     return [
-      { name: 'coins', aliases: ['c', 'balance'], descriptionKey: 'command.coins.description', execute: this.handleCoins },
-      { name: 'daily', aliases: ['tribute'], descriptionKey: 'command.tribute.description', execute: this.handleTribute },
+      { name: 'coins', execute: this.handleCoins },
+      { name: 'daily', execute: this.handleTribute },
     ];
   }
 
   private handleCoins = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, user, t } = ctx;
+    const { invocation, args, user, t } = ctx;
     const sub = (args[0] ?? '').toLowerCase();
 
     if (!['give', 'add', 'take', 'remove', 'clear', 'zerar'].includes(sub)) {
       const { coins } = await this.api.post<{ coins: number }>('/internal/v1/economy/balance', {
         discordId: user.discordId,
         username: user.username ?? undefined,
-        guildId: message.guildId,
+        guildId: invocation.guildId,
       });
-      await message.reply(t('coins.balance', { amount: coins }));
+      await invocation.reply(t('coins.balance', { amount: coins }));
       return;
     }
 
     if (!isBotOwner(user.discordId)) {
-      await message.reply(t('error.not_owner'));
+      await invocation.reply(t('error.not_owner'));
       return;
     }
 
-    const target = message.mentions.users.first();
+    const target = invocation.mentions.users.first();
     if (!target) {
-      await message.reply(t('coins.admin.usage'));
+      await invocation.reply(t('coins.admin.usage'));
       return;
     }
 
@@ -45,7 +45,7 @@ export class EconomyCommands {
     const action = sub === 'clear' || sub === 'zerar' ? 'zero' : sub === 'take' || sub === 'remove' ? 'take' : 'give';
     const amount = action === 'zero' ? undefined : Number(args.find((a) => /^\d+$/.test(a)));
     if (action !== 'zero' && (!Number.isInteger(amount) || (amount ?? 0) <= 0)) {
-      await message.reply(t('coins.admin.usage'));
+      await invocation.reply(t('coins.admin.usage'));
       return;
     }
 
@@ -53,34 +53,34 @@ export class EconomyCommands {
       actorDiscordId: user.discordId,
       targetDiscordId: target.id,
       targetUsername: target.username,
-      guildId: message.guildId,
+      guildId: invocation.guildId,
       action,
       amount,
     });
 
     if (action === 'zero') {
-      await message.reply(t('coins.admin.cleared', { user: mention }));
+      await invocation.reply(t('coins.admin.cleared', { user: mention }));
       return;
     }
     const key = action === 'take' ? 'coins.admin.took' : 'coins.admin.gave';
-    await message.reply(t(key, { amount: amount ?? 0, user: mention, balance: result.coins }));
+    await invocation.reply(t(key, { amount: amount ?? 0, user: mention, balance: result.coins }));
   };
 
   private handleTribute = async (ctx: CommandContext): Promise<void> => {
-    const { user, t, message } = ctx;
+    const { user, t, invocation } = ctx;
     const result = await this.api.post<
       | { ok: true; amount: number; streak: number; coins: number }
       | { ok: false; reason: 'already_claimed'; nextAt: string }
     >('/internal/v1/economy/tribute', {
       discordId: user.discordId,
       username: user.username ?? undefined,
-      guildId: message.guildId,
+      guildId: invocation.guildId,
     });
 
     if (!result.ok) {
-      await message.reply(t('tribute.already', { time: discordRelative(new Date(result.nextAt)) }));
+      await invocation.reply(t('tribute.already', { time: discordRelative(new Date(result.nextAt)) }));
       return;
     }
-    await message.reply(t('tribute.claimed', { amount: result.amount, streak: result.streak }));
+    await invocation.reply(t('tribute.claimed', { amount: result.amount, streak: result.streak }));
   };
 }

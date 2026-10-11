@@ -2,13 +2,16 @@ import type { Client, Interaction, Message } from 'discord.js';
 import { Events, MessageFlags } from 'discord.js';
 
 import { reviveBindResult } from './bind-result';
-import { type InternalClient, InternalApiError } from './client';
-import { commandRegistry } from './command-registry';
+import type { InternalClient } from './client';
+import { dispatchCommand } from './command-dispatcher';
+import { MessageCommandInvocation, SlashCommandInvocation } from './command-invocation';
 import { applyThiefEvent } from './commands/thief-role.util';
 import { renderBindResult } from './commands/bind.presenter';
 import { renderThiefMessages } from './commands/thief.presenter';
-import { buildContext } from './context';
 import { makeTranslator, resolveLocale } from './i18n/i18n.service';
+import type { GuildConfigView } from './interfaces';
+import { contextualLogger, runWithLogContext } from './observability/context';
+import { parseSlashCommand } from './slash-command-catalog';
 import { parseCommand } from './utils/parser.util';
 
 const FALLBACK_ERROR_EMOJI = '❌';
@@ -21,64 +24,84 @@ export function registerEvents(client: Client, api: InternalClient): void {
 }
 
 async function onMessageCreate(api: InternalClient, message: Message): Promise<void> {
-  if (message.author.bot || !message.guildId) return;
-  const config = await api.post<{
-    prefix: string;
-    defaultLocale: 'en' | 'pt' | 'ja' | 'es';
-    allowedChannelIds: string[];
-    scopeMode: 'guild' | 'global' | null;
-  }>('/internal/v1/guilds/ensure', { guildId: message.guildId });
-  const parsed = parseCommand(message.content, config.prefix);
-  if (!parsed) return;
-  const command = commandRegistry.get(parsed.name);
-  if (!command) return;
-
-  if (
-    !command.bypassChannelRestriction &&
-    config.allowedChannelIds.length > 0 &&
-    !config.allowedChannelIds.includes(message.channelId)
-  ) {
-    const t = makeTranslator(resolveLocale(null, config.defaultLocale));
-    const channels = config.allowedChannelIds.map((id) => `<#${id}>`).join(', ');
-    const reply = await message.reply(t('error.wrong_channel', { channels })).catch(() => null);
-    await message.delete().catch(() => undefined);
-    if (reply) setTimeout(() => reply.delete().catch(() => undefined), 5_000);
-    return;
-  }
-
-  // Servidor novo: só setup/ajuda/idioma até um admin escolher o modo de jogo.
-  if (!config.scopeMode && !command.availableBeforeSetup) {
-    const t = makeTranslator(resolveLocale(null, config.defaultLocale));
-    await message.reply(t('error.guild_not_configured', { prefix: config.prefix })).catch(() => undefined);
-    return;
-  }
-
-  try {
-    const ctx = await buildContext(api, message, parsed);
-    if (ctx.user.isBanned) {
-      if (message.channel.isSendable()) await message.reply(BANNED_MESSAGE);
-      return;
-    }
-    await command.execute(ctx);
-  } catch (err) {
-    if (isGuildNotConfigured(err)) {
-      const t = makeTranslator(resolveLocale(null, config.defaultLocale));
-      await message.reply(t('error.guild_not_configured', { prefix: config.prefix })).catch(() => undefined);
-      return;
-    }
-    console.error(err);
-    if (message.channel.isSendable()) {
-      await message.reply(FALLBACK_ERROR_EMOJI).catch(() => undefined);
-    }
-  }
+  if (message.author.bot || !message.inGuild()) return;
+  await runWithLogContext(
+    {
+      requestId: `discord-${message.id}`,
+      source: 'message',
+      event: Events.MessageCreate,
+      guildId: message.guildId,
+      channelId: message.channelId,
+      discordUserId: message.author.id,
+    },
+    () => handleMessageCreate(api, message),
+  );
 }
 
-/** A API recusou o comando porque o servidor ainda não escolheu o modo de jogo. */
-function isGuildNotConfigured(err: unknown): boolean {
-  return err instanceof InternalApiError && err.code === 'guild_not_configured';
+async function handleMessageCreate(api: InternalClient, message: Message<true>): Promise<void> {
+  const log = contextualLogger();
+  try {
+    const config = await api.post<GuildConfigView>('/internal/v1/guilds/ensure', {
+      guildId: message.guildId,
+    });
+    const parsed = parseCommand(message.content, config.prefix);
+    log.debug(
+      {
+        configuredPrefix: config.prefix,
+        prefixMatched: parsed !== null,
+        contentLength: message.content.length,
+      },
+      'message evaluated',
+    );
+    if (!parsed) return;
+    await dispatchCommand(api, new MessageCommandInvocation(message), parsed, config);
+  } catch (err) {
+    log.error({ err, phase: 'message-event' }, 'message handling failed');
+    await message.reply(FALLBACK_ERROR_EMOJI).catch(() => undefined);
+  }
 }
 
 async function onInteractionCreate(api: InternalClient, interaction: Interaction): Promise<void> {
+  const source = interaction.isChatInputCommand() ? 'slash' : 'component';
+  await runWithLogContext(
+    {
+      requestId: `discord-${interaction.id}`,
+      source,
+      event: Events.InteractionCreate,
+      guildId: interaction.guildId ?? undefined,
+      channelId: interaction.channelId ?? undefined,
+      discordUserId: interaction.user.id,
+    },
+    () => handleInteractionCreate(api, interaction),
+  );
+}
+
+async function handleInteractionCreate(api: InternalClient, interaction: Interaction): Promise<void> {
+  const log = contextualLogger();
+  if (interaction.isChatInputCommand()) {
+    try {
+      if (!interaction.inCachedGuild()) {
+        await interaction.reply({ content: FALLBACK_ERROR_EMOJI, flags: MessageFlags.Ephemeral });
+        return;
+      }
+      const resolved = parseSlashCommand(interaction);
+      if (!resolved) {
+        await interaction.reply({ content: FALLBACK_ERROR_EMOJI, flags: MessageFlags.Ephemeral });
+        return;
+      }
+      const invocation = new SlashCommandInvocation(interaction);
+      if (resolved.route.defer !== false) await invocation.defer(resolved.route.ephemeral);
+      await dispatchCommand(api, invocation, resolved.parsed);
+    } catch (err) {
+      log.error({ err, phase: 'slash-event' }, 'interaction handling failed');
+      if (interaction.deferred || interaction.replied) {
+        await interaction.editReply({ content: FALLBACK_ERROR_EMOJI }).catch(() => undefined);
+      } else {
+        await interaction.reply({ content: FALLBACK_ERROR_EMOJI, flags: MessageFlags.Ephemeral }).catch(() => undefined);
+      }
+    }
+    return;
+  }
   if (!interaction.isButton() || !interaction.guildId) return;
   if (interaction.customId !== BIND_CUSTOM_ID && !interaction.customId.startsWith(`${BIND_CUSTOM_ID}:`)) return;
   try {
@@ -99,7 +122,9 @@ async function onInteractionCreate(api: InternalClient, interaction: Interaction
       '/internal/v1/guilds/ensure',
       { guildId: interaction.guildId },
     );
-    const t = makeTranslator(resolveLocale(user.locale, guildConfig.defaultLocale));
+    const t = makeTranslator(resolveLocale(user.locale, guildConfig.defaultLocale), {
+      prefix: guildConfig.prefix,
+    });
     if (!guildConfig.scopeMode) {
       await interaction.editReply({ content: t('error.guild_not_configured', { prefix: guildConfig.prefix }) });
       return;
@@ -141,7 +166,7 @@ async function onInteractionCreate(api: InternalClient, interaction: Interaction
       }
     }
   } catch (err) {
-    console.error(err);
+    log.error({ err, phase: 'component-event', customId: interaction.customId }, 'interaction handling failed');
     if (interaction.deferred || interaction.replied) {
       await interaction.editReply({ content: FALLBACK_ERROR_EMOJI }).catch(() => undefined);
     } else {

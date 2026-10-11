@@ -76,7 +76,7 @@ export function bjtNotEnoughEmbed(opts: BjTableNotEnoughOptions): EmbedBuilder {
 }
 
 export interface BjTableCancelledOptions {
-  /** Comando usado no rodap├® ("tente novamente com k!<command>"). */
+  /** Comando usado no rodap├® ("tente novamente com {prefix}<command>"). */
   command: string;
   t: TranslateFn;
 }

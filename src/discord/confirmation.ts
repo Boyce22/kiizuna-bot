@@ -7,6 +7,8 @@ import {
   type Message,
 } from 'discord.js';
 
+import type { CommandInvocation } from '../command-invocation';
+
 /**
  * Resultado de um fluxo de confirmação (sim/não/timeout). Mantém a referência ao
  * `interaction`/`prompt` para que o **comando** renderize o estado final — a regra fica no
@@ -18,8 +20,8 @@ export type ConfirmationOutcome =
   | { status: 'timeout'; prompt: Message };
 
 export interface ConfirmationParams {
-  /** Mensagem original (para `reply`). */
-  message: Message;
+  /** Invocação original (mensagem ou slash command). */
+  invocation: CommandInvocation;
   /** Texto do prompt de confirmação. */
   content: string;
   /** Só este usuário pode responder aos botões. */
@@ -54,7 +56,7 @@ export async function awaitConfirmation(params: ConfirmationParams): Promise<Con
       .setLabel(params.cancelLabel),
   );
 
-  const prompt = await params.message.reply({ content: params.content, components: [row] });
+  const prompt = await params.invocation.reply({ content: params.content, components: [row] });
 
   try {
     const interaction = await prompt.awaitMessageComponent({

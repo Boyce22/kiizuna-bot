@@ -11,7 +11,7 @@ import {
 } from 'discord.js';
 
 import type { InternalClient } from '../client';
-import type { Command, CommandContext } from '../interfaces';
+import type { CommandContext, CommandExecutor } from '../interfaces';
 
 import { type CardData, MarketCardRenderer } from './market-card.renderer';
 
@@ -58,16 +58,16 @@ export class MarketCommands {
 
   constructor(private readonly api: InternalClient) {}
 
-  get commands(): Command[] {
-    return [{ name: 'market', aliases: ['mercado'], descriptionKey: 'command.market.description', execute: this.handleMarket }];
+  get commands(): CommandExecutor[] {
+    return [{ name: 'market', execute: this.handleMarket }];
   }
 
   private handleMarket = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, flags, user, t } = ctx;
-    const guildId = message.guildId!;
+    const { invocation, args, flags, user, t } = ctx;
+    const guildId = invocation.guildId!;
     const { rarity, invalid } = readRarityFilter(args, flags);
     if (invalid) {
-      await message.reply(t('error.missing_args', { usage: t('market.filter_usage') }));
+      await invocation.reply(t('error.missing_args', { usage: t('market.filter_usage') }));
       return;
     }
     const first = await this.api.post<{ total: number; rows: StockRow[] }>('/internal/v1/market/stock/page', {
@@ -77,7 +77,7 @@ export class MarketCommands {
       rarity,
     });
     if (first.total === 0) {
-      await message.reply(t('market.list.empty'));
+      await invocation.reply(t('market.list.empty'));
       return;
     }
     const totalPages = Math.max(1, Math.ceil(first.total / CARDS_PER_PAGE));
@@ -130,7 +130,7 @@ export class MarketCommands {
     };
 
     const firstRender = await renderWithImage(0);
-    const reply = await message.reply({
+    const reply = await invocation.reply({
       embeds: [firstRender.embed],
       files: [firstRender.file],
       components: buildRows(),
@@ -138,7 +138,7 @@ export class MarketCommands {
     const collector = reply.createMessageComponentCollector({ componentType: ComponentType.Button, time: ui.pagination.defaultTimeoutMs });
     collector.on('collect', async (interaction) => {
       try {
-        if (interaction.user.id !== message.author.id) {
+        if (interaction.user.id !== invocation.author.id) {
           await interaction.reply({ content: t('pagination.not_yours'), flags: MessageFlags.Ephemeral });
           return;
         }
@@ -177,7 +177,7 @@ export class MarketCommands {
         let selectInteraction;
         try {
           selectInteraction = await menuMessage.awaitMessageComponent({
-            filter: (i) => i.customId === BUY_SELECT_ID && i.user.id === message.author.id,
+            filter: (i) => i.customId === BUY_SELECT_ID && i.user.id === invocation.author.id,
             componentType: ComponentType.StringSelect,
             time: 60_000,
           });

@@ -3,7 +3,7 @@ import { ComponentType, MessageFlags } from 'discord.js';
 
 import type { InternalClient } from '../client';
 import { awaitAuthorButton } from '../discord/await-button';
-import type { Command, CommandContext } from '../interfaces';
+import type { CommandContext, CommandExecutor } from '../interfaces';
 
 import {
   BJ_COLORS,
@@ -76,24 +76,22 @@ type ResolveResult =
 export class BlackjackTableCommands {
   constructor(private readonly api: InternalClient) {}
 
-  get commands(): Command[] {
+  get commands(): CommandExecutor[] {
     return [
       {
         name: 'bjtable',
-        aliases: ['blackjacktable', 'bjmesa', 'mesabj'],
-        descriptionKey: 'command.bjtable.description',
         execute: this.handleBjTable,
       },
     ];
   }
 
   private handleBjTable = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, user, t } = ctx;
+    const { invocation, args, user, t } = ctx;
     const { minBet, maxBet, roundTimeoutMs, tableMaxPlayers, tableJoinTimeoutMs } = economy.blackjack;
     const roundSeconds = Math.ceil(roundTimeoutMs / 1000);
     const bet = Number(args[0]);
     if (!Number.isInteger(bet) || bet < minBet || bet > maxBet) {
-      await message.reply(t('blackjack.usage', { min: minBet, max: maxBet }));
+      await invocation.reply(t('blackjack.usage', { min: minBet, max: maxBet }));
       return;
     }
 
@@ -101,21 +99,21 @@ export class BlackjackTableCommands {
       kind: 'bjtable',
       discordId: user.discordId,
       username: user.username ?? undefined,
-      displayName: message.author.username,
-      guildId: message.guildId,
-      channelId: message.channelId,
+      displayName: invocation.author.username,
+      guildId: invocation.guildId,
+      channelId: invocation.channelId,
       bet,
     });
     if (!opened.ok) {
-      if (opened.reason === 'cooldown') await message.reply(t('error.cooldown', { seconds: Math.ceil((opened.resetMs ?? 0) / 1000) }));
-      else if (opened.reason === 'busy') await message.reply(t('error.minigame_busy'));
-      else if (opened.reason === 'no_coins') await message.reply(t('blackjack.no_coins'));
-      else await message.reply(t('blackjack.usage', { min: opened.min ?? minBet, max: opened.max ?? maxBet }));
+      if (opened.reason === 'cooldown') await invocation.reply(t('error.cooldown', { seconds: Math.ceil((opened.resetMs ?? 0) / 1000) }));
+      else if (opened.reason === 'busy') await invocation.reply(t('error.minigame_busy'));
+      else if (opened.reason === 'no_coins') await invocation.reply(t('blackjack.no_coins'));
+      else await invocation.reply(t('blackjack.usage', { min: opened.min ?? minBet, max: opened.max ?? maxBet }));
       return;
     }
 
     const thumb = bjThumbnailFile();
-    const lobbyMessage = await message.reply({
+    const lobbyMessage = await invocation.reply({
       files: thumb ? [thumb] : [],
       embeds: [
         bjtLobbyEmbed({

@@ -1,35 +1,33 @@
 import { isBotOwner } from '@utils';
 
 import type { InternalClient } from '../client';
-import type { Command, CommandContext } from '../interfaces';
+import type { CommandContext, CommandExecutor } from '../interfaces';
 
 export class MarketAdminCommands {
   constructor(private readonly api: InternalClient) {}
 
-  get commands(): Command[] {
+  get commands(): CommandExecutor[] {
     return [
       {
         name: 'market-admin',
-        aliases: ['marketadmin', 'mercado-admin'],
-        descriptionKey: 'command.marketAdmin.description',
         execute: this.handleMarketAdmin,
       },
     ];
   }
 
   private handleMarketAdmin = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, user, t } = ctx;
+    const { invocation, args, user, t } = ctx;
     if (!isBotOwner(user.discordId)) {
-      await message.reply(t('error.not_owner'));
+      await invocation.reply(t('error.not_owner'));
       return;
     }
     const sub = (args[0] ?? '').toLowerCase();
-    const guildId = message.guildId!;
+    const guildId = invocation.guildId!;
     if (sub === 'add' || sub === 'adicionar') {
       const characterId = Number(args[1]);
       const priceArg = Number(args[2]);
       if (!Number.isInteger(characterId) || characterId <= 0) {
-        await message.reply(t('error.missing_args', { usage: 'k!market-admin add <id_personagem> [preço]' }));
+        await invocation.reply(t('error.missing_args', { usage: '{prefix}market-admin add <id_personagem> [preço]' }));
         return;
       }
       const result = await this.api.post<
@@ -42,16 +40,16 @@ export class MarketAdminCommands {
         price: Number.isInteger(priceArg) && priceArg > 0 ? priceArg : undefined,
       });
       if (!result.ok) {
-        await message.reply(t(`marketAdmin.${result.reason}`, { id: characterId }));
+        await invocation.reply(t(`marketAdmin.${result.reason}`, { id: characterId }));
         return;
       }
-      await message.reply(t('marketAdmin.added', { name: result.characterName, id: result.stockId, price: result.price }));
+      await invocation.reply(t('marketAdmin.added', { name: result.characterName, id: result.stockId, price: result.price }));
       return;
     }
     if (sub === 'remove' || sub === 'remover' || sub === 'rm') {
       const stockId = Number(args[1]);
       if (!Number.isInteger(stockId) || stockId <= 0) {
-        await message.reply(t('error.missing_args', { usage: 'k!market-admin remove <id_estoque>' }));
+        await invocation.reply(t('error.missing_args', { usage: '{prefix}market-admin remove <id_estoque>' }));
         return;
       }
       const result = await this.api.post<{ ok: true } | { ok: false }>('/internal/v1/market/admin/stock', {
@@ -60,7 +58,7 @@ export class MarketAdminCommands {
         action: 'remove',
         stockId,
       });
-      await message.reply(result.ok ? t('marketAdmin.removed', { id: stockId }) : t('marketAdmin.not_found', { id: stockId }));
+      await invocation.reply(result.ok ? t('marketAdmin.removed', { id: stockId }) : t('marketAdmin.not_found', { id: stockId }));
       return;
     }
     if (sub === 'list') {
@@ -69,17 +67,17 @@ export class MarketAdminCommands {
         { actorDiscordId: user.discordId, guildId, action: 'list' },
       );
       if (rows.length === 0) {
-        await message.reply(t('market.list.empty'));
+        await invocation.reply(t('market.list.empty'));
         return;
       }
       const lines = rows.map(
         (r) => `\`#${r.id}\` **${r.characterName}** · ${t(`common.rarity.${r.rarity}`)} — 💰 **${r.price}**`,
       );
-      await message.reply([t('marketAdmin.list_title', { count: rows.length }), ...lines].join('\n'));
+      await invocation.reply([t('marketAdmin.list_title', { count: rows.length }), ...lines].join('\n'));
       return;
     }
-    await message.reply(
-      t('error.missing_args', { usage: 'k!market-admin add <id_personagem> [preço] | list | remove <id_estoque>' }),
+    await invocation.reply(
+      t('error.missing_args', { usage: '{prefix}market-admin add <id_personagem> [preço] | list | remove <id_estoque>' }),
     );
   };
 }

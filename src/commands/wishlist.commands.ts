@@ -1,11 +1,10 @@
 import { ui } from '@config';
 import { paginate, readFlag } from '@utils';
-import type { Message } from 'discord.js';
-
 import type { InternalClient } from '../client';
+import type { CommandInvocation } from '../command-invocation';
 import { awaitConfirmation } from '../discord/confirmation';
 import { awaitSelection } from '../discord/selection';
-import type { Command, CommandContext, TranslateFn } from '../interfaces';
+import type { CommandContext, CommandExecutor, TranslateFn } from '../interfaces';
 
 import { buildWishlistEmbed } from './wishlist.presenter';
 
@@ -17,15 +16,15 @@ type Candidate = { id: number; name: string; series: string | null; rarity: stri
 export class WishlistCommands {
   constructor(private readonly api: InternalClient) {}
 
-  get commands(): Command[] {
+  get commands(): CommandExecutor[] {
     return [
-      { name: 'wishlist', aliases: ['wl', 'desejos'], descriptionKey: 'command.wishlist.description', execute: this.handleWishlist },
+      { name: 'wishlist', execute: this.handleWishlist },
     ];
   }
 
   private handleWishlist = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, flags, user, t } = ctx;
-    const guildId = message.guildId!;
+    const { invocation, args, flags, user, t } = ctx;
+    const guildId = invocation.guildId!;
     const sub = (args[0] ?? 'list').toLowerCase();
 
     if (sub === 'clear' || sub === 'limpar') {
@@ -35,12 +34,12 @@ export class WishlistCommands {
         guildId,
       });
       if (count === 0) {
-        await message.reply(t('wishlist.clear.empty'));
+        await invocation.reply(t('wishlist.clear.empty'));
         return;
       }
 
       const outcome = await awaitConfirmation({
-        message,
+        invocation,
         content: t('wishlist.clear.confirm', { count }),
         authorizedUserId: user.discordId,
         confirmLabel: t('common.confirm'),
@@ -74,7 +73,7 @@ export class WishlistCommands {
       const seriesFlag = readFlag(flags, SERIES_FLAGS);
       const name = (nameFlag ?? args.slice(1).join(' ')).trim();
       if (!name) {
-        await message.reply(t('wishlist.usage'));
+        await invocation.reply(t('wishlist.usage'));
         return;
       }
 
@@ -84,7 +83,7 @@ export class WishlistCommands {
       );
       if (candidates.length === 0) {
         const series = seriesFlag ? t('wishlist.char_not_found_series_suffix', { series: seriesFlag }) : '';
-        await message.reply(t('wishlist.char_not_found', { name, series }));
+        await invocation.reply(t('wishlist.char_not_found', { name, series }));
         return;
       }
 
@@ -112,16 +111,16 @@ export class WishlistCommands {
       };
 
       if (candidates.length === 1) {
-        await message.reply(await finalize(candidates[0]));
+        await invocation.reply(await finalize(candidates[0]));
         return;
       }
 
-      await this.pickCandidate(message, candidates, t, finalize);
+      await this.pickCandidate(invocation, candidates, t, finalize);
       return;
     }
 
     const pageSize = ui.pagination.wishlistPageSize;
-    const targetName = message.member?.displayName ?? message.author.username;
+    const targetName = invocation.member?.displayName ?? invocation.author.username;
     type Page = {
       total: number;
       entries: { characterId: number; character: { id: number; name: string; series: string | null; rarity: string; type: string } | null }[];
@@ -134,12 +133,12 @@ export class WishlistCommands {
       pageSize,
     });
     if (first.total === 0) {
-      await message.reply(t('wishlist.list.empty'));
+      await invocation.reply(t('wishlist.list.empty'));
       return;
     }
 
     await paginate({
-      message,
+      invocation,
       total: first.total,
       pageSize,
       t,
@@ -160,13 +159,13 @@ export class WishlistCommands {
   };
 
   private async pickCandidate(
-    message: Message,
+    invocation: CommandInvocation,
     candidates: Candidate[],
     t: TranslateFn,
     finalize: (character: Candidate) => Promise<string>,
   ): Promise<void> {
     const outcome = await awaitSelection({
-      message,
+      invocation,
       content: t('wishlist.pick_prompt'),
       placeholder: t('wishlist.pick_placeholder'),
       options: candidates.map((c) => ({
@@ -174,7 +173,7 @@ export class WishlistCommands {
         description: (c.series ?? t('wishlist.unknown_series')).slice(0, 100),
         value: c,
       })),
-      authorizedUserId: message.author.id,
+      authorizedUserId: invocation.author.id,
       timeoutMs: 60_000,
       idPrefix: 'wl_pick',
     });

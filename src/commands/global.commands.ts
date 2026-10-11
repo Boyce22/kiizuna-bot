@@ -1,7 +1,7 @@
 import { EmbedBuilder, MessageFlags } from 'discord.js';
 
 import type { InternalClient } from '../client';
-import type { Command, CommandContext } from '../interfaces';
+import type { CommandContext, CommandExecutor } from '../interfaces';
 
 import { buildRanksContainer } from './ranks.presenter';
 
@@ -15,21 +15,21 @@ const METRICS: Record<string, 'harem' | 'bond' | 'mythics'> = {
 export class GlobalCommands {
   constructor(private readonly api: InternalClient) {}
 
-  get commands(): Command[] {
+  get commands(): CommandExecutor[] {
     return [
-      { name: 'globalprofile', aliases: ['gp', 'gprofile'], descriptionKey: 'command.globalprofile.description', execute: this.handleGlobalProfile },
-      { name: 'globaltop', aliases: ['gtop'], descriptionKey: 'command.globaltop.description', execute: this.handleGlobalTop },
-      { name: 'globalhide', aliases: ['ghide'], descriptionKey: 'command.globalhide.description', execute: this.handleGlobalHide },
-      { name: 'ranks', aliases: ['rank'], descriptionKey: 'command.ranks.description', execute: this.handleRanks },
-      { name: 'showcase', aliases: ['vitrine'], descriptionKey: 'command.showcase.description', execute: this.handleShowcase },
+      { name: 'globalprofile', execute: this.handleGlobalProfile },
+      { name: 'globaltop', execute: this.handleGlobalTop },
+      { name: 'globalhide', execute: this.handleGlobalHide },
+      { name: 'ranks', execute: this.handleRanks },
+      { name: 'showcase', execute: this.handleShowcase },
     ];
   }
 
   private handleGlobalProfile = async (ctx: CommandContext): Promise<void> => {
-    const { message, user, t } = ctx;
-    const targetUser = message.mentions.users.first() ?? message.author;
+    const { invocation, user, t } = ctx;
+    const targetUser = invocation.mentions.users.first() ?? invocation.author;
     const targetName =
-      message.mentions.members?.first()?.displayName ?? message.member?.displayName ?? targetUser.username;
+      invocation.mentions.members?.first()?.displayName ?? invocation.member?.displayName ?? targetUser.username;
     const data = await this.api.post<{
       coins: number;
       peakRank: number;
@@ -63,49 +63,49 @@ export class GlobalCommands {
           inline: false,
         },
       );
-    await message.reply({ embeds: [embed] });
+    await invocation.reply({ embeds: [embed] });
   };
 
   private handleGlobalTop = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, t } = ctx;
+    const { invocation, args, t } = ctx;
     const metric = METRICS[(args[0] ?? 'harem').toLowerCase()] ?? 'harem';
     const { rows } = await this.api.post<{ rows: Array<{ rank: number; value: number; discordId: string }> }>(
       '/internal/v1/global/top',
       { metric },
     );
     if (rows.length === 0) {
-      await message.reply(t('globaltop.empty'));
+      await invocation.reply(t('globaltop.empty'));
       return;
     }
     const lines = rows.map((r) => `\`#${r.rank}\` <@${r.discordId}> — **${r.value}**`);
-    await message.reply({
+    await invocation.reply({
       embeds: [new EmbedBuilder().setTitle(t(`globaltop.title.${metric}`)).setDescription(lines.join('\n'))],
     });
   };
 
   private handleGlobalHide = async (ctx: CommandContext): Promise<void> => {
-    const { message, user, t } = ctx;
+    const { invocation, user, t } = ctx;
     const { globalPrivacy } = await this.api.post<{ globalPrivacy: boolean }>('/internal/v1/users/privacy', {
       discordId: user.discordId,
       username: user.username ?? undefined,
     });
-    await message.reply(globalPrivacy ? t('globalhide.on') : t('globalhide.off'));
+    await invocation.reply(globalPrivacy ? t('globalhide.on') : t('globalhide.off'));
   };
 
   private handleRanks = async (ctx: CommandContext): Promise<void> => {
-    const { message, user, t } = ctx;
+    const { invocation, user, t } = ctx;
     const container = buildRanksContainer(user.globalRank, t);
-    await message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
+    await invocation.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
   };
 
   private handleShowcase = async (ctx: CommandContext): Promise<void> => {
-    const { message, args, user, t } = ctx;
+    const { invocation, args, user, t } = ctx;
     const sub = (args[0] ?? '').toLowerCase();
     if (sub === 'set') {
       const characterId = Number(args[1]);
       const position = args[2] && /^\d+$/.test(args[2]) ? Number(args[2]) : undefined;
       if (!Number.isInteger(characterId)) {
-        await message.reply(t('error.missing_args', { usage: 'k!showcase set <id_personagem> [posição]' }));
+        await invocation.reply(t('error.missing_args', { usage: '{prefix}showcase set <id_personagem> [posição]' }));
         return;
       }
       const result = await this.api.post<{ ok: true; position: number } | { ok: false; reason: string }>(
@@ -113,34 +113,34 @@ export class GlobalCommands {
         {
           discordId: user.discordId,
           username: user.username ?? undefined,
-          guildId: message.guildId,
+          guildId: invocation.guildId,
           action: 'set',
           characterId,
           position,
         },
       );
-      await message.reply(result.ok ? t('showcase.set', { position: result.position }) : t(`showcase.${result.reason}`));
+      await invocation.reply(result.ok ? t('showcase.set', { position: result.position }) : t(`showcase.${result.reason}`));
       return;
     }
     if (sub === 'remove') {
       const position = Number(args[1]);
       if (!Number.isInteger(position)) {
-        await message.reply(t('error.missing_args', { usage: 'k!showcase remove <posição>' }));
+        await invocation.reply(t('error.missing_args', { usage: '{prefix}showcase remove <posição>' }));
         return;
       }
       const result = await this.api.post<{ ok: boolean }>('/internal/v1/global/showcase', {
         discordId: user.discordId,
         username: user.username ?? undefined,
-        guildId: message.guildId,
+        guildId: invocation.guildId,
         action: 'remove',
         position,
       });
-      await message.reply(result.ok ? t('showcase.removed') : t('showcase.not_found'));
+      await invocation.reply(result.ok ? t('showcase.removed') : t('showcase.not_found'));
       return;
     }
-    const targetUser = message.mentions.users.first() ?? message.author;
+    const targetUser = invocation.mentions.users.first() ?? invocation.author;
     const targetName =
-      message.mentions.members?.first()?.displayName ?? message.member?.displayName ?? targetUser.username;
+      invocation.mentions.members?.first()?.displayName ?? invocation.member?.displayName ?? targetUser.username;
     const { entries } = await this.api.post<{
       entries: Array<{ position: number; name: string; rarity: string; servers: number }>;
     }>('/internal/v1/global/showcase', {
@@ -148,18 +148,18 @@ export class GlobalCommands {
       username: user.username ?? undefined,
       targetDiscordId: targetUser.id,
       targetUsername: targetUser.username,
-      guildId: message.guildId,
+      guildId: invocation.guildId,
       action: 'get',
     });
     if (entries.length === 0) {
-      await message.reply(t('showcase.empty'));
+      await invocation.reply(t('showcase.empty'));
       return;
     }
     const lines = entries.map(
       (slot) =>
         `\`${slot.position}.\` **${slot.name}** · ${t(`common.rarity.${slot.rarity}`)} · ${t('showcase.servers', { count: slot.servers })}`,
     );
-    await message.reply({
+    await invocation.reply({
       embeds: [new EmbedBuilder().setTitle(t('showcase.title', { user: targetName })).setDescription(lines.join('\n'))],
     });
   };
