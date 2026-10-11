@@ -143,6 +143,12 @@ export const es: LocaleTree = {
     not_owned: 'No posees ese personaje en este servidor.',
     no_coins: '💸 No tienes suficientes coins.',
     min: '❓ Mínimo **{min}** coins (= 1 de bond).',
+    all_started: "💞 Repartiendo en segundo plano: **+{points} de bond** en cada una de tus **{cards}** cartas ({spent} coins). Te aviso por DM al terminar.",
+    all_done: "💞 Gift all terminado: +{points} de bond en {cards} cartas ({spent} coins gastados).",
+    all_partial: "⚠️ Gift all se detuvo antes de tiempo (sin coins): +{points} de bond en {cards} cartas ({spent} coins gastados).",
+    all_busy: "⏳ Ya tienes un gift all en curso.",
+    all_vip: "💎 `gift all` es exclusivo del VIP **Eien**.",
+    no_cards: "No tienes personajes en este servidor.",
   },
   site: {
     prompt: '🔗 Abre Kizuna en la web para ver tu colección y tu cuenta.',

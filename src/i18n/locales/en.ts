@@ -142,6 +142,12 @@ export const en = {
     not_owned: "You don't own that character in this server.",
     no_coins: '💸 You do not have enough coins.',
     min: '❓ Minimum **{min}** coins (= 1 bond).',
+    all_started: "💞 Distributing in the background: **+{points} bond** on each of your **{cards}** cards ({spent} coins). I will DM you when it is done.",
+    all_done: "💞 Gift all finished: +{points} bond on {cards} cards ({spent} coins spent).",
+    all_partial: "⚠️ Gift all stopped early (out of coins): +{points} bond on {cards} cards ({spent} coins spent).",
+    all_busy: "⏳ You already have a gift-all running.",
+    all_vip: "💎 `gift all` is exclusive to **Eien** VIP.",
+    no_cards: "You have no characters in this server.",
   },
   site: {
     prompt: '🔗 Open Kizuna on the web to see your collection and account.',

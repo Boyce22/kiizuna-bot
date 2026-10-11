@@ -2,16 +2,24 @@ import 'dotenv/config';
 
 import { Client, Events, GatewayIntentBits, Partials } from 'discord.js';
 
+import type { Locale } from './interfaces';
 import { internalClient } from './client';
 import { initCommands } from './command-registry';
 import { registerEvents } from './events';
+import { translate } from './i18n/i18n.service';
 import { registerCommandsForCurrentGuilds, registerGuildCommands } from './guild-command-registration';
 import { captureError, childLogger, logger } from './observability/logger';
 import { installTelemetry } from './observability/telemetry';
 
 async function drainNotify(bot: Client): Promise<void> {
   const { items } = await internalClient.post<{
-    items: Array<{ type: string; discordId: string; key: string; vars?: Record<string, string> }>;
+    items: Array<{
+      type: string;
+      discordId: string;
+      key: string;
+      locale?: Locale;
+      vars?: Record<string, string>;
+    }>;
   }>('/internal/v1/notify/drain');
   let delivered = 0;
   let failed = 0;
@@ -22,7 +30,7 @@ async function drainNotify(bot: Client): Promise<void> {
       failed++;
       continue;
     }
-    const sent = await user.send(item.key).then(() => true, () => false);
+    const sent = await user.send(translate(item.key, item.locale ?? 'en', item.vars)).then(() => true, () => false);
     if (sent) delivered++;
     else failed++;
   }

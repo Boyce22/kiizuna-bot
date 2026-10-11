@@ -143,6 +143,12 @@ export const ja: LocaleTree = {
     not_owned: 'このサーバーでそのキャラクターを所有していません。',
     no_coins: '💸 コインが足りません。',
     min: '❓ 最低**{min}**コイン（＝絆1）。',
+    all_started: "💞 バックグラウンドで配布中：**{cards}**枚すべてに**絆+{points}**（{spent}コイン）。完了したらDMでお知らせします。",
+    all_done: "💞 一括ギフト完了：{cards}枚に絆+{points}（{spent}コイン消費）。",
+    all_partial: "⚠️ 一括ギフトはコイン不足で途中停止：{cards}枚に絆+{points}（{spent}コイン消費）。",
+    all_busy: "⏳ 一括ギフトはすでに実行中です。",
+    all_vip: "💎 `gift all` は **Eien** VIP 限定です。",
+    no_cards: "このサーバーにキャラクターがいません。",
   },
   site: {
     prompt: '🔗 WebでKizunaを開いて、コレクションとアカウントを確認できます。',

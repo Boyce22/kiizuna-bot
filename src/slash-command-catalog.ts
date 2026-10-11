@@ -249,6 +249,7 @@ export const slashRoutes: SlashRouteSpec[] = [
   { root: 'economy', subcommand: 'balance', description: 'Mostre seu saldo de coins', legacyCommand: 'coins' },
   { root: 'economy', subcommand: 'daily', description: 'Receba sua recompensa diária', legacyCommand: 'daily' },
   { root: 'economy', subcommand: 'gift', description: 'Presenteie um personagem para aumentar o vínculo', legacyCommand: 'gift', options: [integerOption('personagem', 'ID do personagem', true, 1), integerOption('coins', 'Quantidade de coins', true, 1)] },
+  { root: 'economy', subcommand: 'giftall', description: 'Reparta coins entre todas as suas cartas (em segundo plano)', legacyCommand: 'gift', fixedArgs: ['all'], options: [integerOption('coins', 'Total de coins a repartir', true, 1)] },
   { root: 'economy', subcommand: 'duel', description: 'Desafie outro jogador por coins', legacyCommand: 'duel', options: [userOption('Jogador que receberá o desafio', true), integerOption('aposta', 'Quantidade de coins apostada', false, 1)] },
 
   { root: 'market', subcommand: 'browse', description: 'Consulte personagens à venda por preço fixo', legacyCommand: 'market', options: [stringOption('raridade', 'Filtre os resultados por raridade', false, 'arg', undefined, rarityChoices)] },
