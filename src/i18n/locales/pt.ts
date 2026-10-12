@@ -384,6 +384,10 @@ export const pt: LocaleTree = {
     on: '🙈 Você saiu dos rankings globais.',
     off: '🙉 Você voltou aos rankings globais.',
   },
+  campaign: {
+    overtaken_dm: "🩸 **{challenger}** completou a Escalada em **{campaign}** e tomou a posição **#{rank}**. Você desceu uma posição. Monte um time melhor e retome o lugar.",
+    defense_digest_dm: "🛡️ Ontem você foi desafiado **{total}x** no pódio e segurou a posição em **{held}**.",
+  },
   ranks: {
     title: '🏆 CLASSIFICAÇÃO',
     caption: 'Você está em {emoji} {name}',

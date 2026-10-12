@@ -383,6 +383,10 @@ export const en = {
     on: '🙈 You are now hidden from global rankings.',
     off: '🙉 You are back in global rankings.',
   },
+  campaign: {
+    overtaken_dm: "🩸 **{challenger}** completed the Climb in **{campaign}** and took rank **#{rank}**. You dropped one spot. Build a better team and take it back.",
+    defense_digest_dm: "🛡️ Yesterday you were challenged **{total}x** on the podium and held your spot **{held}** times.",
+  },
   ranks: {
     title: '🏆 Rank ladder',
     caption: "You're at {emoji} {name}",

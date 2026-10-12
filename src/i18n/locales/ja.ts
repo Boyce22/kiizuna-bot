@@ -384,6 +384,10 @@ export const ja: LocaleTree = {
     on: '🙈 グローバルランキングから非表示になりました。',
     off: '🙉 グローバルランキングに戻りました。',
   },
+  campaign: {
+    overtaken_dm: "🩸 **{challenger}** が **{campaign}** のクライムを制し、**#{rank}** を奪いました。あなたの順位は1つ下がりました。より強いチームで取り返しましょう。",
+    defense_digest_dm: "🛡️ 昨日、表彰台で **{total}回** 挑戦され、**{held}回** 防衛しました。",
+  },
   ranks: {
     title: '🏆 ランク一覧',
     caption: '現在: {emoji} {name}',
