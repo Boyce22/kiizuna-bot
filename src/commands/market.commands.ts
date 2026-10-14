@@ -11,6 +11,7 @@ import {
 } from 'discord.js';
 
 import type { InternalClient } from '../client';
+import { refusalMessage } from '../i18n/refusal';
 import type { CommandContext, CommandExecutor } from '../interfaces';
 
 import { type CardData, MarketCardRenderer } from './market-card.renderer';
@@ -186,12 +187,12 @@ export class MarketCommands {
           return;
         }
         await selectInteraction.deferUpdate();
-        const result = await this.api.post<{ ok: true; price: number } | { ok: false; reason: string }>(
+        const result = await this.api.call<{ price: number }>(
           '/internal/v1/market/stock/buy',
           { discordId: user.discordId, username: user.username ?? undefined, guildId, stockId: Number(selectInteraction.values[0]) },
         );
         if (!result.ok) {
-          await selectInteraction.editReply({ content: t(`market.${result.reason}`), components: [] });
+          await selectInteraction.editReply({ content: refusalMessage(t, 'market', result.code), components: [] });
           return;
         }
         pngCache.clear();

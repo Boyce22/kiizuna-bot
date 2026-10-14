@@ -1,6 +1,7 @@
 import { isBotOwner } from '@utils';
 
 import type { InternalClient } from '../client';
+import { refusalMessage } from '../i18n/refusal';
 import type { CommandContext, CommandExecutor } from '../interfaces';
 
 export class MarketAdminCommands {
@@ -30,9 +31,7 @@ export class MarketAdminCommands {
         await invocation.reply(t('error.missing_args', { usage: '{prefix}market-admin add <id_personagem> [preço]' }));
         return;
       }
-      const result = await this.api.post<
-        { ok: true; characterName: string; stockId: number; price: number } | { ok: false; reason: string }
-      >('/internal/v1/market/admin/stock', {
+      const result = await this.api.call<{ characterName: string; stockId: number; price: number }>('/internal/v1/market/admin/stock', {
         actorDiscordId: user.discordId,
         guildId,
         action: 'add',
@@ -40,7 +39,7 @@ export class MarketAdminCommands {
         price: Number.isInteger(priceArg) && priceArg > 0 ? priceArg : undefined,
       });
       if (!result.ok) {
-        await invocation.reply(t(`marketAdmin.${result.reason}`, { id: characterId }));
+        await invocation.reply(refusalMessage(t, 'marketAdmin', result.code, { id: characterId }));
         return;
       }
       await invocation.reply(t('marketAdmin.added', { name: result.characterName, id: result.stockId, price: result.price }));
@@ -52,13 +51,13 @@ export class MarketAdminCommands {
         await invocation.reply(t('error.missing_args', { usage: '{prefix}market-admin remove <id_estoque>' }));
         return;
       }
-      const result = await this.api.post<{ ok: true } | { ok: false }>('/internal/v1/market/admin/stock', {
+      const result = await this.api.call('/internal/v1/market/admin/stock', {
         actorDiscordId: user.discordId,
         guildId,
         action: 'remove',
         stockId,
       });
-      await invocation.reply(result.ok ? t('marketAdmin.removed', { id: stockId }) : t('marketAdmin.not_found', { id: stockId }));
+      await invocation.reply(result.ok ? t('marketAdmin.removed', { id: stockId }) : t('marketAdmin.NOT_FOUND', { id: stockId }));
       return;
     }
     if (sub === 'list') {

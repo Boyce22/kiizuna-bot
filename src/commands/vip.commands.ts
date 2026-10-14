@@ -87,12 +87,12 @@ export class VipCommands {
         await invocation.reply(t('vip.invalid_tier'));
         return;
       }
-      const result = await this.api.post<{ ok: boolean; url: string | null }>('/internal/v1/vip/checkout', {
+      const result = await this.api.call<{ url: string }>('/internal/v1/vip/checkout', {
         discordId: user.discordId,
         username: user.username ?? undefined,
         tier,
       });
-      if (!result.url) {
+      if (!result.ok) {
         await invocation.reply(t('vip.checkout_unavailable'));
         return;
       }

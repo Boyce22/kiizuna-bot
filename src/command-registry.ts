@@ -3,18 +3,13 @@ import { getCommandMetadata } from './command-metadata';
 import { AdminCommands } from './commands/admin.commands';
 import { AnimeWishlistCommands } from './commands/anime-wishlist.commands';
 import { AuctionCommands } from './commands/auction.commands';
-import { BlackjackPvpCommands } from './commands/blackjack-pvp.commands';
-import { BlackjackTableCommands } from './commands/blackjack-table.commands';
-import { BlackjackCommands } from './commands/blackjack.commands';
 import { BondCommands } from './commands/bond.commands';
 import { BossCommands } from './commands/boss.commands';
 import { CollectionCommands } from './commands/collection.commands';
-import { DuelCommands } from './commands/duel.commands';
 import { EconomyCommands } from './commands/economy.commands';
 import { GalleryCommands } from './commands/gallery.commands';
 import { GlobalCommands } from './commands/global.commands';
 import { HelpCommands } from './commands/help.commands';
-import { HigherLowerCommands } from './commands/higher-lower.commands';
 import { MarketAdminCommands } from './commands/market-admin.commands';
 import { MarketCommands } from './commands/market.commands';
 import { ProfileCommands } from './commands/profile.commands';
@@ -55,7 +50,6 @@ export function initCommands(api: InternalClient): void {
       commands: withMetadata([
         ...new ProfileCommands(api).commands,
         ...new BondCommands(api).commands,
-        ...new DuelCommands(api).commands,
         ...new GalleryCommands(api).commands,
       ]),
     },
@@ -72,10 +66,6 @@ export function initCommands(api: InternalClient): void {
     {
       key: 'games',
       commands: withMetadata([
-        ...new BlackjackCommands(api).commands,
-        ...new BlackjackTableCommands(api).commands,
-        ...new BlackjackPvpCommands(api).commands,
-        ...new HigherLowerCommands(api).commands,
         ...new BossCommands(api).commands,
       ]),
     },

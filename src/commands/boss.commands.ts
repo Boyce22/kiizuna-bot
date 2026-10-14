@@ -2,13 +2,12 @@ import { RARITY_COLORS } from '@config';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, MessageFlags } from 'discord.js';
 
 import type { InternalClient } from '../client';
+import { refusalMessage } from '../i18n/refusal';
 import type { CommandContext, CommandExecutor } from '../interfaces';
 
 const BOSS_COLOR = 0xb03a3a;
 
-type StartResult =
-  | {
-      ok: true;
+type FightStart = {
       token: string;
       url: string;
       boss: {
@@ -23,8 +22,7 @@ type StartResult =
         series: string | null;
         charId: number | null;
       };
-    }
-  | { ok: false; reason: 'no_boss' | 'empty_harem' };
+    };
 
 export class BossCommands {
   constructor(private readonly api: InternalClient) {}
@@ -39,14 +37,20 @@ export class BossCommands {
     const { invocation, user, t } = ctx;
     if (!invocation.guildId) return;
 
-    const result = await this.api.post<StartResult>('/internal/v1/boss/start', {
+    const result = await this.api.call<FightStart>('/internal/v1/boss/start', {
       discordId: user.discordId,
       username: user.username ?? undefined,
       guildId: invocation.guildId,
       channelId: invocation.channelId,
     });
     if (!result.ok) {
-      await invocation.reply(t(result.reason === 'no_boss' ? 'boss.no_boss' : 'boss.empty_harem'));
+      await invocation.reply(
+        result.code === 'NO_BOSS'
+          ? t('boss.no_boss')
+          : result.code === 'EMPTY_HAREM'
+            ? t('boss.empty_harem')
+            : refusalMessage(t, 'boss', result.code),
+      );
       return;
     }
 
@@ -70,7 +74,7 @@ export class BossCommands {
     }
   };
 
-  private bossEmbed(boss: Extract<StartResult, { ok: true }>['boss'], t: CommandContext['t']): EmbedBuilder {
+  private bossEmbed(boss: FightStart['boss'], t: CommandContext['t']): EmbedBuilder {
     const series = boss.series ? `-# *${boss.series}*` : '-# —';
     const embed = new EmbedBuilder()
       .setAuthor({ name: t('boss.title') })

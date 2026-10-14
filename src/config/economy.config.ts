@@ -9,14 +9,6 @@ export const economy = {
     streak30Multiplier: 3, // x3 com streak >= 30 dias
   },
 
-  // --- Duelo (net-zero + sink) ---
-  duel: {
-    defaultWager: 100,
-    rake: 0.05, // 5% do pote, queimado
-    bondWeightFactor: 0.01, // +1% de peso por ponto de bond (pequeno)
-    variance: 0.3, // ±30% de variação aleatória
-  },
-
   // --- Gift / bond (sink principal) ---
   bond: {
     coinsPerPoint: 10, // 10 coins = +1 bond
@@ -62,32 +54,9 @@ export const economy = {
   // --- Trava de re-trade (anti-flip) ---
   tradeLockDays: 7,
 
-  // --- Higher/Lower (faucet pequeno, escala com streak) ---
-  higherLower: {
-    roundTimeoutMs: 25_000, // janela por rodada (botões)
-    maxRounds: 15, // teto de rodadas por sessão (evita farm infinito)
-    baseReward: 15, // coins por acerto
-    perStreakBonus: 10, // +coins por ponto de streak
-    bustKeepFactor: 0.25, // ao errar, mantém só 25% do acumulado (sacar mantém 100%)
-  },
-
-  // --- Blackjack (sink/source com vantagem da casa via regras) ---
-  blackjack: {
-    minBet: 10,
-    maxBet: 2_000,
-    blackjackMultiplier: 1.5, // 21 natural paga 3:2
-    dealerStandsOn: 17, // dealer compra até 17
-    roundTimeoutMs: 60_000, // janela total de decisão do jogador (por turno, na mesa)
-    tableMaxPlayers: 4, // jogadores por mesa multiplayer
-    tableJoinTimeoutMs: 30_000, // janela para outros entrarem na mesa antes do início
-    pvpRake: 0.05, // taxa da casa sobre o pote no PvP (anti-trade: dois combinados perdem 15%)
-  },
-
   // --- Cooldowns anti-abuso (ms). Limitam comandos caros (ORDER BY RANDOM, collectors). ---
   cooldowns: {
     summonMs: 1_000, // por usuário, entre summons (anti double-fire; rollsLeft é o throttle real)
-    higherLowerMs: 4_000, // por usuário, para iniciar um higher/lower
-    blackjackMs: 4_000, // por usuário, para iniciar um blackjack
   },
 };
 

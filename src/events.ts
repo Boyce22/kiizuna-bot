@@ -126,13 +126,13 @@ async function handleInteractionCreate(api: InternalClient, interaction: Interac
       prefix: guildConfig.prefix,
     });
     if (!guildConfig.scopeMode) {
-      await interaction.editReply({ content: t('error.guild_not_configured', { prefix: guildConfig.prefix }) });
+      await interaction.editReply({ content: t('error.GUILD_NOT_CONFIGURED', { prefix: guildConfig.prefix }) });
       return;
     }
     const [, characterIdRaw, summonerId, summonedAtRaw] = interaction.customId.split(':');
     const characterId = Number(characterIdRaw);
     const summonedAtMs = summonedAtRaw ? Number(summonedAtRaw) : undefined;
-    const raw = await api.post<Record<string, unknown>>('/internal/v1/gacha/bind', {
+    const raw = await api.call<Record<string, unknown>, Record<string, unknown>>('/internal/v1/gacha/bind', {
       discordId: interaction.user.id,
       username: interaction.user.username,
       guildId: interaction.guildId,

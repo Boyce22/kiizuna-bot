@@ -1,3 +1,4 @@
+import type { ErrorCode } from '../api-error-codes';
 import { type Rarity, RARITY_EMOJI } from '@config';
 
 import type { CharacterType } from '../character-types';
@@ -86,10 +87,10 @@ export function parseAddCharModal(
 }
 
 /** Motivo de recusa da API → chave i18n; o que não estiver aqui vira erro genérico. */
-const ADDCHAR_ERROR_KEYS: Record<string, string> = {
-  base_not_found: 'addchar.base_not_found',
+const ADDCHAR_ERROR_KEYS: Partial<Record<ErrorCode, string>> = {
+  BASE_NOT_FOUND: 'addchar.base_not_found',
 };
 
-export function addCharErrorKey(reason: string | undefined): string {
-  return (reason && ADDCHAR_ERROR_KEYS[reason]) || 'error.generic';
+export function addCharErrorKey(code: ErrorCode): string {
+  return ADDCHAR_ERROR_KEYS[code] ?? 'error.generic';
 }

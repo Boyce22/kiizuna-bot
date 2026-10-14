@@ -15,11 +15,11 @@ export interface BindMessages {
 // Render único do resultado de bind — reutilizado pelo comando de texto e pelo botão 💍.
 export function renderBindResult(result: BindResult, t: TranslateFn): BindMessages {
   if (!result.ok) {
-    if (result.reason === 'cooldown') {
+    if (result.code === 'COOLDOWN') {
       const key = result.bindKind === 'steal' ? 'bind.steal_cooldown' : 'bind.cooldown';
       return { content: t(key, { time: discordRelative(result.cooldownUntil) }) };
     }
-    if (result.reason === 'expired') {
+    if (result.code === 'EXPIRED') {
       return { content: t('bind.expired') };
     }
     return { content: t('bind.none_active') };

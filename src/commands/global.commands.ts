@@ -1,6 +1,7 @@
 import { EmbedBuilder, MessageFlags } from 'discord.js';
 
 import type { InternalClient } from '../client';
+import { refusalMessage } from '../i18n/refusal';
 import type { CommandContext, CommandExecutor } from '../interfaces';
 
 import { buildRanksContainer } from './ranks.presenter';
@@ -109,7 +110,7 @@ export class GlobalCommands {
         await invocation.reply(t('error.missing_args', { usage: '{prefix}showcase set <id_personagem> [posição]' }));
         return;
       }
-      const result = await this.api.post<{ ok: true; position: number } | { ok: false; reason: string }>(
+      const result = await this.api.call<{ position: number }>(
         '/internal/v1/global/showcase',
         {
           discordId: user.discordId,
@@ -120,7 +121,7 @@ export class GlobalCommands {
           position,
         },
       );
-      await invocation.reply(result.ok ? t('showcase.set', { position: result.position }) : t(`showcase.${result.reason}`));
+      await invocation.reply(result.ok ? t('showcase.set', { position: result.position }) : refusalMessage(t, 'showcase', result.code));
       return;
     }
     if (sub === 'remove') {
@@ -129,14 +130,14 @@ export class GlobalCommands {
         await invocation.reply(t('error.missing_args', { usage: '{prefix}showcase remove <posição>' }));
         return;
       }
-      const result = await this.api.post<{ ok: boolean }>('/internal/v1/global/showcase', {
+      const result = await this.api.call('/internal/v1/global/showcase', {
         discordId: user.discordId,
         username: user.username ?? undefined,
         guildId: invocation.guildId,
         action: 'remove',
         position,
       });
-      await invocation.reply(result.ok ? t('showcase.removed') : t('showcase.not_found'));
+      await invocation.reply(result.ok ? t('showcase.removed') : t('showcase.NOT_FOUND'));
       return;
     }
     const targetUser = invocation.mentions.users.first() ?? invocation.author;

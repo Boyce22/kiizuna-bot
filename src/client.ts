@@ -1,5 +1,6 @@
 import { performance } from 'node:perf_hooks';
 
+import type { ErrorCode } from './api-error-codes';
 import { canonicalPath, signInternalRequest } from './hmac';
 import { contextualLogger, currentLogContext } from './observability/context';
 import { newCorrelationId } from './observability/logger';
@@ -13,15 +14,23 @@ function configuredValue(value: string | undefined, fallback: string): string {
   return normalized ? normalized : fallback;
 }
 
+/** Resposta de erro da API: `{ code, ...detalhes }` com o status HTTP. */
 export class InternalApiError extends Error {
   constructor(
     public readonly status: number,
-    public readonly code: string,
+    public readonly code: ErrorCode,
+    public readonly details: Record<string, unknown> = {},
   ) {
     super(code);
     this.name = 'InternalApiError';
   }
 }
+
+/** Recusa de negócio (4xx) vista pelo comando: o código e os detalhes que a API mandou. */
+export type ApiFailure<D extends object = object> = { ok: false; status: number; code: ErrorCode } & Partial<D>;
+
+/** Resultado de `call`: sucesso com o corpo, ou a recusa. O `ok` existe só aqui no bot, não no fio. */
+export type ApiResult<T, D extends object = object> = ({ ok: true } & T) | ApiFailure<D>;
 
 export class InternalClient {
   constructor(
@@ -52,12 +61,12 @@ export class InternalClient {
       recordApiRequest(pathname, res.status, elapsedMs);
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const code =
-          typeof (data as { error?: unknown }).error === 'string'
-            ? (data as { error: string }).error
-            : 'internal';
-        log.warn({ status: res.status, code, elapsedMs }, 'internal api request failed');
-        throw new InternalApiError(res.status, code);
+        const { code, ...details } = data as { code?: unknown } & Record<string, unknown>;
+        const known = typeof code === 'string' ? (code as ErrorCode) : 'INTERNAL';
+        // 4xx é recusa de negócio (sem saldo, cooldown...): esperado, não é falha do serviço.
+        if (res.status >= 500) log.warn({ status: res.status, code: known, elapsedMs }, 'internal api request failed');
+        else log.debug({ status: res.status, code: known, elapsedMs }, 'internal api request refused');
+        throw new InternalApiError(res.status, known, details);
       }
       log.debug({ status: res.status, elapsedMs }, 'internal api request completed');
       return data as T;
@@ -66,6 +75,23 @@ export class InternalClient {
       const elapsedMs = performance.now() - startedAt;
       recordApiRequest(pathname, 0, elapsedMs);
       log.error({ err, elapsedMs }, 'internal api request transport error');
+      throw err;
+    }
+  }
+
+  /**
+   * Como `post`, mas a recusa de negócio (4xx) volta como resultado em vez de exceção, para o
+   * comando responder pelo código. Falha do serviço (5xx, rede) continua lançando.
+   */
+  async call<T extends object = object, D extends object = object>(
+    path: string,
+    body: unknown = {},
+  ): Promise<ApiResult<T, D>> {
+    try {
+      return { ok: true, ...(await this.post<T>(path, body)) };
+    } catch (err) {
+      if (err instanceof InternalApiError && err.status < 500)
+        return { ...(err.details as Partial<D>), ok: false, status: err.status, code: err.code };
       throw err;
     }
   }

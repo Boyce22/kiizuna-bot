@@ -113,7 +113,7 @@ export const slashRoots: SlashRootSpec[] = [
   { name: 'profile', description: 'Consulte perfis, galerias e vínculos' },
   { name: 'economy', description: 'Consulte seu saldo e use recursos sociais' },
   { name: 'market', description: 'Compre, venda, troque e leiloe personagens' },
-  { name: 'games', description: 'Jogue partidas e enfrente o boss do dia' },
+  { name: 'games', description: 'Enfrente o boss do dia' },
   { name: 'global', description: 'Consulte recursos compartilhados entre servidores' },
   { name: 'vip', description: 'Consulte e gerencie sua assinatura VIP' },
   { name: 'settings', description: 'Ajuste suas preferências pessoais' },
@@ -250,7 +250,6 @@ export const slashRoutes: SlashRouteSpec[] = [
   { root: 'economy', subcommand: 'daily', description: 'Receba sua recompensa diária', legacyCommand: 'daily' },
   { root: 'economy', subcommand: 'gift', description: 'Presenteie um personagem para aumentar o vínculo', legacyCommand: 'gift', options: [integerOption('personagem', 'ID do personagem', true, 1), integerOption('coins', 'Quantidade de coins', true, 1)] },
   { root: 'economy', subcommand: 'giftall', description: 'Reparta coins entre todas as suas cartas (em segundo plano)', legacyCommand: 'gift', fixedArgs: ['all'], options: [integerOption('coins', 'Total de coins a repartir', true, 1)] },
-  { root: 'economy', subcommand: 'duel', description: 'Desafie outro jogador por coins', legacyCommand: 'duel', options: [userOption('Jogador que receberá o desafio', true), integerOption('aposta', 'Quantidade de coins apostada', false, 1)] },
 
   { root: 'market', subcommand: 'browse', description: 'Consulte personagens à venda por preço fixo', legacyCommand: 'market', options: [stringOption('raridade', 'Filtre os resultados por raridade', false, 'arg', undefined, rarityChoices)] },
   { root: 'market', subcommand: 'sell', description: 'Venda um personagem ao Kizuna', legacyCommand: 'sell', options: [integerOption('personagem', 'ID do personagem', true, 1)] },
@@ -261,10 +260,6 @@ export const slashRoutes: SlashRouteSpec[] = [
   { root: 'market', group: 'auction', subcommand: 'info', description: 'Consulte os detalhes de um leilão', legacyCommand: 'auction', fixedArgs: ['info'], options: [integerOption('leilao', 'ID do leilão', true, 1)] },
   { root: 'market', group: 'auction', subcommand: 'cancel', description: 'Cancele um leilão criado por você', legacyCommand: 'auction', fixedArgs: ['cancel'], options: [integerOption('leilao', 'ID do leilão', true, 1)] },
 
-  { root: 'games', subcommand: 'blackjack', description: 'Jogue blackjack contra o dealer', legacyCommand: 'blackjack', options: [integerOption('aposta', 'Quantidade de coins apostada', true, 1)] },
-  { root: 'games', subcommand: 'blackjack-table', description: 'Abra uma mesa de blackjack cooperativa', legacyCommand: 'bjtable', options: [integerOption('aposta', 'Quantidade de coins por jogador', true, 1)] },
-  { root: 'games', subcommand: 'blackjack-pvp', description: 'Jogue blackjack contra até três jogadores', legacyCommand: 'bjpvp', options: [integerOption('aposta', 'Quantidade de coins por jogador', true, 1)] },
-  { root: 'games', subcommand: 'higher-lower', description: 'Adivinhe qual personagem vale mais', legacyCommand: 'higherlower' },
   { root: 'games', subcommand: 'boss', description: 'Enfrente o boss do dia', legacyCommand: 'boss' },
 
   { root: 'global', subcommand: 'profile', description: 'Mostre o perfil global de um jogador', legacyCommand: 'globalprofile', options: [userOption('Jogador cujo perfil será mostrado')] },

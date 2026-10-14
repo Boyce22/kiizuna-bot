@@ -16,9 +16,7 @@ export class SellCommands {
       await invocation.reply(t('error.missing_args', { usage: '{prefix}sell <id_personagem>' }));
       return;
     }
-    const owned = await this.api.post<
-      { ok: true; name: string; kizunaPrice: number } | { ok: false; reason: 'not_owned' }
-    >('/internal/v1/harem/owned', {
+    const owned = await this.api.call<{ name: string; kizunaPrice: number }>('/internal/v1/harem/owned', {
       discordId: user.discordId,
       username: user.username ?? undefined,
       guildId: invocation.guildId,
@@ -45,9 +43,7 @@ export class SellCommands {
       await outcome.interaction.update({ content: t('sell.cancelled'), components: [] });
       return;
     }
-    const result = await this.api.post<
-      { ok: true; price: number; name: string } | { ok: false; reason: 'locked' | 'not_owned' }
-    >('/internal/v1/market/sell-kizuna', {
+    const result = await this.api.call<{ price: number; name: string }>('/internal/v1/market/sell-kizuna', {
       discordId: user.discordId,
       username: user.username ?? undefined,
       guildId: invocation.guildId,

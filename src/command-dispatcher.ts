@@ -99,7 +99,7 @@ async function dispatchWithinContext(
 
   if (!config.scopeMode && !command.availableBeforeSetup) {
     await invocation
-      .reply(guildTranslator('error.guild_not_configured', { prefix: config.prefix }), true)
+      .reply(guildTranslator('error.GUILD_NOT_CONFIGURED', { prefix: config.prefix }), true)
       .catch(() => undefined);
     finish('setup_required');
     return;
@@ -117,7 +117,7 @@ async function dispatchWithinContext(
   } catch (err) {
     if (isGuildNotConfigured(err)) {
       await invocation
-        .reply(guildTranslator('error.guild_not_configured', { prefix: config.prefix }), true)
+        .reply(guildTranslator('error.GUILD_NOT_CONFIGURED', { prefix: config.prefix }), true)
         .catch(() => undefined);
       finish('setup_required');
       return;
@@ -130,5 +130,5 @@ async function dispatchWithinContext(
 }
 
 function isGuildNotConfigured(err: unknown): boolean {
-  return err instanceof InternalApiError && err.code === 'guild_not_configured';
+  return err instanceof InternalApiError && err.code === 'GUILD_NOT_CONFIGURED';
 }

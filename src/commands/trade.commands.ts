@@ -2,6 +2,7 @@ import { readFlag } from '@utils';
 import { ButtonStyle } from 'discord.js';
 
 import type { InternalClient } from '../client';
+import { refusalMessage } from '../i18n/refusal';
 import { awaitConfirmation } from '../discord/confirmation';
 import { awaitSelection } from '../discord/selection';
 import type { CommandContext, CommandExecutor } from '../interfaces';
@@ -51,9 +52,9 @@ export class TradeCommands {
       [mineToken, theirsToken] = ids;
     }
 
-    const mine = await this.resolveToken(ctx, user.discordId, user.username, mineToken, 'trade.mine_not_owned');
+    const mine = await this.resolveToken(ctx, user.discordId, user.username, mineToken, 'trade.MINE_NOT_OWNED');
     if (!mine) return;
-    const theirs = await this.resolveToken(ctx, target.id, target.username, theirsToken, 'trade.theirs_not_owned', {
+    const theirs = await this.resolveToken(ctx, target.id, target.username, theirsToken, 'trade.THEIRS_NOT_OWNED', {
       user: target.username,
     });
     if (!theirs) return;
@@ -81,7 +82,7 @@ export class TradeCommands {
       await outcome.interaction.update({ content: t('trade.declined'), components: [] });
       return;
     }
-    const result = await this.api.post<{ ok: true } | { ok: false; reason: string }>('/internal/v1/market/trade', {
+    const result = await this.api.call('/internal/v1/market/trade', {
       discordId: user.discordId,
       username: user.username ?? undefined,
       targetDiscordId: target.id,
@@ -91,7 +92,7 @@ export class TradeCommands {
       theirsCharacterId: theirs.characterId,
     });
     await outcome.interaction.update({
-      content: result.ok ? t('trade.done') : t(`trade.${result.reason}`),
+      content: result.ok ? t('trade.done') : refusalMessage(t, 'trade', result.code),
       components: [],
     });
   };
@@ -107,7 +108,7 @@ export class TradeCommands {
     const { invocation, t } = ctx;
     const guildId = invocation.guildId!;
     if (/^\d+$/.test(token)) {
-      const owned = await this.api.post<{ ok: true } & OwnedMatch | { ok: false }>('/internal/v1/harem/owned', {
+      const owned = await this.api.call<OwnedMatch>('/internal/v1/harem/owned', {
         discordId,
         username,
         guildId,

@@ -1,6 +1,7 @@
 import { discordRelative, isBotOwner } from '@utils';
 
 import type { InternalClient } from '../client';
+import { refusalMessage } from '../i18n/refusal';
 import type { CommandContext, CommandExecutor } from '../interfaces';
 
 /**
@@ -68,17 +69,18 @@ export class EconomyCommands {
 
   private handleTribute = async (ctx: CommandContext): Promise<void> => {
     const { user, t, invocation } = ctx;
-    const result = await this.api.post<
-      | { ok: true; amount: number; streak: number; coins: number }
-      | { ok: false; reason: 'already_claimed'; nextAt: string }
-    >('/internal/v1/economy/tribute', {
+    const result = await this.api.call<{ amount: number; streak: number; coins: number }, { nextAt: string }>('/internal/v1/economy/tribute', {
       discordId: user.discordId,
       username: user.username ?? undefined,
       guildId: invocation.guildId,
     });
 
     if (!result.ok) {
-      await invocation.reply(t('tribute.already', { time: discordRelative(new Date(result.nextAt)) }));
+      await invocation.reply(
+        result.code === 'ALREADY_CLAIMED' && result.nextAt
+          ? t('tribute.already', { time: discordRelative(new Date(result.nextAt)) })
+          : refusalMessage(t, 'tribute', result.code),
+      );
       return;
     }
     await invocation.reply(t('tribute.claimed', { amount: result.amount, streak: result.streak }));

@@ -1,11 +1,19 @@
 import { discordRelative } from '@utils';
 
-import type { InternalClient } from '../client';
+import type { ApiFailure, InternalClient } from '../client';
+import { refusalMessage } from '../i18n/refusal';
 import { awaitSelection } from '../discord/selection';
-import type { CommandContext, CommandExecutor } from '../interfaces';
+import type { CommandContext, CommandExecutor, TranslateFn } from '../interfaces';
 
 export class AnimeWishlistCommands {
   constructor(private readonly api: InternalClient) {}
+
+  /** LOCKED traz até quando a troca está travada; outros códigos usam a mensagem genérica. */
+  private refusal(t: TranslateFn, result: ApiFailure<{ unlocksAt: string }>): string {
+    if (result.code === 'LOCKED' && result.unlocksAt)
+      return t('animewishlist.locked', { time: discordRelative(new Date(result.unlocksAt)) });
+    return refusalMessage(t, 'animewishlist', result.code);
+  }
 
   get commands(): CommandExecutor[] {
     return [
@@ -36,15 +44,11 @@ export class AnimeWishlistCommands {
     }
 
     if (new Set(['clear', 'limpar']).has(args[0].toLowerCase())) {
-      const result = await this.api.post<{ status: 'set' | 'locked'; unlocksAt?: string }>(
+      const result = await this.api.call<{ series: string | null }, { unlocksAt: string }>(
         '/internal/v1/anime-wishlist/set',
         { ...actor, series: null },
       );
-      await invocation.reply(
-        result.status === 'locked'
-          ? t('animewishlist.locked', { time: discordRelative(new Date(result.unlocksAt!)) })
-          : t('animewishlist.cleared'),
-      );
+      await invocation.reply(result.ok ? t('animewishlist.cleared') : this.refusal(t, result));
       return;
     }
 
@@ -56,13 +60,11 @@ export class AnimeWishlistCommands {
     }
 
     const finalize = async (series: string): Promise<string> => {
-      const result = await this.api.post<{ status: 'set' | 'locked'; unlocksAt?: string }>(
+      const result = await this.api.call<{ series: string | null }, { unlocksAt: string }>(
         '/internal/v1/anime-wishlist/set',
         { ...actor, series },
       );
-      return result.status === 'locked'
-        ? t('animewishlist.locked', { time: discordRelative(new Date(result.unlocksAt!)) })
-        : t('animewishlist.set', { series });
+      return result.ok ? t('animewishlist.set', { series }) : this.refusal(t, result);
     };
 
     if (matches.length === 1) {

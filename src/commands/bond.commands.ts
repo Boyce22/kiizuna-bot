@@ -1,17 +1,11 @@
+import type { ErrorCode } from '../api-error-codes';
 import type { InternalClient } from '../client';
+import { refusalMessage } from '../i18n/refusal';
 import type { CommandContext, CommandExecutor } from '../interfaces';
 
-type GiftResult =
-  | { ok: true; points: number; bond: number; attrs: { atk: number; speed: number; def: number }; name: string }
-  | { ok: false; reason: 'min' | 'no_coins' | 'not_owned'; min?: number };
-
-type GiftAllResult =
-  | { ok: true; cards: number; pointsEach: number; spent: number }
-  | { ok: false; reason: 'min' | 'no_coins' | 'no_cards' | 'busy' | 'vip_required'; min?: number };
-
-type SoulmateResult =
-  | { ok: true; name: string; tier: string }
-  | { ok: false; reason: 'vip_required' | 'not_owned'; tier?: string };
+type Gift = { points: number; bond: number; attrs: { atk: number; speed: number; def: number }; name: string };
+type GiftAll = { cards: number; pointsEach: number; spent: number };
+type Soulmate = { name: string; tier: string };
 
 export class BondCommands {
   constructor(private readonly api: InternalClient) {}
@@ -36,7 +30,7 @@ export class BondCommands {
       return;
     }
 
-    const result = await this.api.post<GiftResult>('/internal/v1/bond/gift', {
+    const result = await this.api.call<Gift, { min: number }>('/internal/v1/bond/gift', {
       discordId: user.discordId,
       username: user.username ?? undefined,
       guildId: invocation.guildId,
@@ -44,11 +38,12 @@ export class BondCommands {
       coins,
     });
     if (!result.ok) {
-      if (result.reason === 'not_owned') {
-        await invocation.reply(t('gift.not_owned'));
-        return;
-      }
-      await invocation.reply(result.reason === 'min' ? t('gift.min', { min: result.min ?? 0 }) : t('gift.no_coins'));
+      const reply: Partial<Record<ErrorCode, () => string>> = {
+        NOT_OWNED: () => t('gift.not_owned'),
+        MIN: () => t('gift.min', { min: result.min ?? 0 }),
+        NO_COINS: () => t('gift.no_coins'),
+      };
+      await invocation.reply(reply[result.code]?.() ?? refusalMessage(t, 'gift', result.code));
       return;
     }
 
@@ -70,21 +65,21 @@ export class BondCommands {
       await invocation.reply(t('error.missing_args', { usage: '{prefix}gift all <coins>' }));
       return;
     }
-    const result = await this.api.post<GiftAllResult>('/internal/v1/bond/gift-all', {
+    const result = await this.api.call<GiftAll, { min: number }>('/internal/v1/bond/gift-all', {
       discordId: user.discordId,
       username: user.username ?? undefined,
       guildId: invocation.guildId,
       coins,
     });
     if (!result.ok) {
-      const reply = {
-        min: () => t('gift.min', { min: result.min ?? 0 }),
-        no_coins: () => t('gift.no_coins'),
-        no_cards: () => t('gift.no_cards'),
-        busy: () => t('gift.all_busy'),
-        vip_required: () => t('gift.all_vip'),
-      }[result.reason]();
-      await invocation.reply(reply);
+      const reply: Partial<Record<ErrorCode, () => string>> = {
+        MIN: () => t('gift.min', { min: result.min ?? 0 }),
+        NO_COINS: () => t('gift.no_coins'),
+        NO_CARDS: () => t('gift.no_cards'),
+        BUSY: () => t('gift.all_busy'),
+        VIP_REQUIRED: () => t('gift.all_vip'),
+      };
+      await invocation.reply(reply[result.code]?.() ?? refusalMessage(t, 'gift', result.code));
       return;
     }
     await invocation.reply(
@@ -100,14 +95,20 @@ export class BondCommands {
       return;
     }
 
-    const result = await this.api.post<SoulmateResult>('/internal/v1/bond/soulmate', {
+    const result = await this.api.call<Soulmate>('/internal/v1/bond/soulmate', {
       discordId: user.discordId,
       username: user.username ?? undefined,
       guildId: invocation.guildId,
       characterId,
     });
     if (!result.ok) {
-      await invocation.reply(result.reason === 'vip_required' ? t('soulmate.vip_required') : t('soulmate.not_owned'));
+      await invocation.reply(
+        result.code === 'VIP_REQUIRED'
+          ? t('soulmate.vip_required')
+          : result.code === 'NOT_OWNED'
+            ? t('soulmate.not_owned')
+            : refusalMessage(t, 'soulmate', result.code),
+      );
       return;
     }
     await invocation.reply(t('soulmate.set', { name: result.name }));

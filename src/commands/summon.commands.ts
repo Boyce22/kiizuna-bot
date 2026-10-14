@@ -4,6 +4,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 
 import { reviveBindResult } from '../bind-result';
 import type { InternalClient } from '../client';
+import { refusalMessage } from '../i18n/refusal';
 import type { CommandInvocation } from '../command-invocation';
 import { awaitSelection } from '../discord/selection';
 import type { CommandContext, CommandExecutor, TranslateFn } from '../interfaces';
@@ -24,7 +25,6 @@ const TYPE_ALIASES: Record<string, 'waifu' | 'husbando' | 'all'> = {
 };
 
 type SummonOk = {
-  ok: true;
   character: {
     id: number;
     name: string;
@@ -39,11 +39,8 @@ type SummonOk = {
   };
 };
 
-type SummonFail = {
-  ok: false;
-  reason: 'no_rolls' | 'empty_pool' | 'target_unavailable' | 'target_not_found' | 'cooldown';
-  resetAt?: string | null;
-};
+/** Detalhe das recusas de roll (NO_ROLLS, TARGET_UNAVAILABLE, COOLDOWN): quando volta. */
+type SummonRefusal = { resetAt: string | null };
 
 /**
  * Handlers do fluxo summon → bind. Só I/O do Discord — roll/claim na API interna.
@@ -90,7 +87,7 @@ export class SummonCommands {
       targetSeries = resolved;
     }
 
-    const result = await this.api.post<SummonOk | SummonFail>('/internal/v1/gacha/summon', {
+    const result = await this.api.call<SummonOk, SummonRefusal>('/internal/v1/gacha/summon', {
       discordId: user.discordId,
       username: user.username ?? undefined,
       guildId: invocation.guildId,
@@ -102,13 +99,13 @@ export class SummonCommands {
     });
 
     if (!result.ok) {
-      if (result.reason === 'no_rolls') {
+      if (result.code === 'NO_ROLLS') {
         await invocation.reply(
           t('summon.no_rolls', { time: result.resetAt ? discordRelative(new Date(result.resetAt)) : '—' }),
         );
         return;
       }
-      if (result.reason === 'target_unavailable') {
+      if (result.code === 'TARGET_UNAVAILABLE') {
         await invocation.reply(
           t('summon.target_unavailable', {
             time: result.resetAt ? discordRelative(new Date(result.resetAt)) : '—',
@@ -116,12 +113,12 @@ export class SummonCommands {
         );
         return;
       }
-      if (result.reason === 'cooldown') {
+      if (result.code === 'COOLDOWN') {
         const wait = result.resetAt ? Math.max(1, Math.ceil((new Date(result.resetAt).getTime() - Date.now()) / 1000)) : 1;
-        await invocation.reply(t('error.cooldown', { seconds: wait }));
+        await invocation.reply(t('error.COOLDOWN', { seconds: wait }));
         return;
       }
-      await invocation.reply(t('error.generic'));
+      await invocation.reply(refusalMessage(t, 'summon', result.code));
       return;
     }
 
@@ -185,7 +182,7 @@ export class SummonCommands {
     const { invocation, user, t } = ctx;
     if (!invocation.guildId) return;
 
-    const raw = await this.api.post<Record<string, unknown>>('/internal/v1/gacha/bind', {
+    const raw = await this.api.call<Record<string, unknown>, Record<string, unknown>>('/internal/v1/gacha/bind', {
       discordId: user.discordId,
       username: user.username ?? undefined,
       guildId: invocation.guildId,

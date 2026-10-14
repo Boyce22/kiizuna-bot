@@ -12,9 +12,9 @@ export interface ThiefEvent {
 }
 
 export type BindResult =
-  | { ok: false; reason: 'none_active' | 'expired' }
+  | { ok: false; code: 'NONE_ACTIVE' | 'EXPIRED' }
   // `claim` = summon próprio; `steal` = summon de outra pessoa (cooldowns separados).
-  | { ok: false; reason: 'cooldown'; bindKind: 'claim' | 'steal'; cooldownUntil: Date }
+  | { ok: false; code: 'COOLDOWN'; bindKind: 'claim' | 'steal'; cooldownUntil: Date }
   | { ok: true; kind: 'dupe'; name: string; coins: number }
   | {
       ok: true;

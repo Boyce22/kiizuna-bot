@@ -1,6 +1,7 @@
 import { ui } from '@config';
 import { paginate, readFlag } from '@utils';
 import type { InternalClient } from '../client';
+import { refusalMessage } from '../i18n/refusal';
 import type { CommandInvocation } from '../command-invocation';
 import { awaitConfirmation } from '../discord/confirmation';
 import { awaitSelection } from '../discord/selection';
@@ -89,25 +90,28 @@ export class WishlistCommands {
 
       const finalize = async (character: Candidate): Promise<string> => {
         if (sub === 'add') {
-          const data = await this.api.post<{ result: string; max: number }>('/internal/v1/wishlist/mutate', {
+          const data = await this.api.call<{ max: number }, { max: number }>('/internal/v1/wishlist/mutate', {
             discordId: user.discordId,
             username: user.username ?? undefined,
             guildId,
             action: 'add',
             characterId: character.id,
           });
-          const key = data.result === 'added' ? 'wishlist.added' : `wishlist.${data.result}`;
-          return t(key, { name: character.name, max: data.max });
+          if (data.ok) return t('wishlist.added', { name: character.name, max: data.max });
+          if (data.code === 'FULL') return t('wishlist.full', { name: character.name, max: data.max ?? 0 });
+          if (data.code === 'ALREADY_ADDED') return t('wishlist.exists', { name: character.name });
+          return refusalMessage(t, 'wishlist', data.code);
         }
-        const data = await this.api.post<{ result: string }>('/internal/v1/wishlist/mutate', {
+        const data = await this.api.call('/internal/v1/wishlist/mutate', {
           discordId: user.discordId,
           username: user.username ?? undefined,
           guildId,
           action: 'remove',
           characterId: character.id,
         });
-        const key = data.result === 'removed' ? 'wishlist.removed' : 'wishlist.not_found';
-        return t(key, { name: character.name });
+        if (data.ok) return t('wishlist.removed', { name: character.name });
+        if (data.code === 'NOT_IN_LIST') return t('wishlist.not_found', { name: character.name });
+        return refusalMessage(t, 'wishlist', data.code);
       };
 
       if (candidates.length === 1) {

@@ -92,12 +92,12 @@ export class AdminCommands {
         await invocation.reply(t('setup.mode_usage'));
         return;
       }
-      const result = await this.api.post<{ ok: boolean; mode: 'guild' | 'global' }>('/internal/v1/guilds/setup', {
+      const result = await this.api.call<{ mode: 'guild' | 'global' }, { mode: 'guild' | 'global' }>('/internal/v1/guilds/setup', {
         guildId,
         action: 'mode',
         value,
       });
-      const mode = t(`setup.mode_names.${result.mode}`);
+      const mode = t(`setup.mode_names.${result.mode ?? 'unset'}`);
       await invocation.reply(t(result.ok ? 'setup.mode_set' : 'setup.mode_already', { mode }));
       return;
     }
@@ -167,15 +167,15 @@ export class AdminCommands {
           await invocation.reply(t('setup.channels.usage'));
           return;
         }
-        const data = await this.api.post<{ ok: boolean; reason?: string; allowedChannelIds?: string[] }>(
+        const data = await this.api.call<{ allowedChannelIds: string[] }>(
           '/internal/v1/guilds/setup',
           { guildId, action: action === 'add' ? 'channels-add' : 'channels-remove', targetChannelId: target.id },
         );
-        if (!data.ok && data.reason === 'already_added') {
+        if (!data.ok && data.code === 'ALREADY_ADDED') {
           await invocation.reply(t('setup.channels.already_added', { channel: `<#${target.id}>` }));
           return;
         }
-        if (!data.ok && data.reason === 'not_in_list') {
+        if (!data.ok && data.code === 'NOT_IN_LIST') {
           await invocation.reply(t('setup.channels.not_in_list', { channel: `<#${target.id}>` }));
           return;
         }
@@ -218,7 +218,7 @@ export class AdminCommands {
         await invocation.reply(t('error.missing_args', { usage: '{prefix}charimage add <id> <url> [--nsfw] [--primary]' }));
         return;
       }
-      const result = await this.api.post<{ ok: boolean; reason?: string; id?: number; nsfw?: boolean; primary?: boolean }>(
+      const result = await this.api.call<{ id: number; nsfw: boolean; primary: boolean }>(
         '/internal/v1/admin/charimage',
         {
           actorDiscordId: user.discordId,
@@ -235,7 +235,7 @@ export class AdminCommands {
       }
       await invocation.reply(
         t('charimage.added', {
-          id: result.id ?? 0,
+          id: result.id,
           group: result.nsfw ? '🔞 NSFW' : '🟢 SFW',
           primary: result.primary ? '⭐' : '—',
         }),
@@ -271,7 +271,7 @@ export class AdminCommands {
         await invocation.reply(t('error.missing_args', { usage: '{prefix}charimage remove <id_imagem>' }));
         return;
       }
-      const { ok } = await this.api.post<{ ok: boolean }>('/internal/v1/admin/charimage', {
+      const { ok } = await this.api.call('/internal/v1/admin/charimage', {
         actorDiscordId: user.discordId,
         action: 'remove',
         imageId,
@@ -321,13 +321,13 @@ export class AdminCommands {
         return;
       }
       const { input } = parsed;
-      const created = await this.api.post<{ ok: boolean; reason?: string; character?: CharacterView }>(
+      const created = await this.api.call<{ character: CharacterView }>(
         '/internal/v1/admin/character/create',
         { actorDiscordId: user.discordId, type: draft.type, rarity: draft.rarity, nsfw: draft.nsfw, ...input },
       );
-      if (!created.ok || !created.character) {
+      if (!created.ok) {
         await submit.reply({
-          content: t(addCharErrorKey(created.reason), { id: input.baseCharacterId ?? 0 }),
+          content: t(addCharErrorKey(created.code), { id: input.baseCharacterId ?? 0 }),
           flags: MessageFlags.Ephemeral,
         });
         return;
@@ -352,11 +352,11 @@ export class AdminCommands {
       await invocation.reply(t('editchar.usage'));
       return;
     }
-    const found = await this.api.post<{ ok: boolean; character?: CharacterView }>('/internal/v1/admin/character/get', {
+    const found = await this.api.call<{ character: CharacterView }>('/internal/v1/admin/character/get', {
       actorDiscordId: user.discordId,
       characterId: id,
     });
-    if (!found.ok || !found.character) {
+    if (!found.ok) {
       await invocation.reply(t('editchar.not_found', { id }));
       return;
     }
@@ -399,13 +399,13 @@ export class AdminCommands {
         return;
       }
       if (i.customId === EDITCHAR_SAVE_ID) {
-        const saved = await this.api.post<{ ok: boolean; character?: CharacterView }>('/internal/v1/admin/character/edit', {
+        const saved = await this.api.call<{ character: CharacterView }>('/internal/v1/admin/character/edit', {
           actorDiscordId: user.discordId,
           characterId: id,
           ...draft,
         });
         collector.stop('done');
-        if (!saved.ok || !saved.character) {
+        if (!saved.ok) {
           await i.update({ content: t('editchar.not_found', { id }), components: [] });
           return;
         }
@@ -436,11 +436,11 @@ export class AdminCommands {
       await invocation.reply(t('removechar.usage'));
       return;
     }
-    const found = await this.api.post<{ ok: boolean; character?: CharacterView }>('/internal/v1/admin/character/get', {
+    const found = await this.api.call<{ character: CharacterView }>('/internal/v1/admin/character/get', {
       actorDiscordId: user.discordId,
       characterId: id,
     });
-    if (!found.ok || !found.character) {
+    if (!found.ok) {
       await invocation.reply(t('removechar.not_found', { id }));
       return;
     }
@@ -467,7 +467,7 @@ export class AdminCommands {
       await interaction.update({ content: t('removechar.cancelled'), components: [] });
       return;
     }
-    const deleted = await this.api.post<{ ok: boolean; name?: string; id?: number }>('/internal/v1/admin/character/delete', {
+    const deleted = await this.api.call<{ name: string; id: number }>('/internal/v1/admin/character/delete', {
       actorDiscordId: user.discordId,
       characterId: id,
     });
