@@ -9,7 +9,7 @@
     "start": "node dist/index.js",
     "dev": "ts-node -r tsconfig-paths/register src/index.ts",
     "commands:register": "ts-node -r tsconfig-paths/register src/register-commands.ts",
-    "test": "npm run build && node --test dist/slash-command-catalog.test.js dist/command-runtime.test.js dist/client.test.js",
+    "test": "npm run build && node --test dist/slash-command-catalog.test.js dist/command-runtime.test.js dist/client.test.js dist/command-throttle.test.js",
     "typecheck": "tsc --noEmit",
     "sync:errors": "node scripts/sync-error-codes.mjs"
   },

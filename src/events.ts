@@ -5,6 +5,7 @@ import { reviveBindResult } from './bind-result';
 import type { InternalClient } from './client';
 import { dispatchCommand } from './command-dispatcher';
 import { MessageCommandInvocation, SlashCommandInvocation } from './command-invocation';
+import { componentThrottle } from './command-throttle';
 import { applyThiefEvent } from './commands/thief-role.util';
 import { renderBindResult } from './commands/bind.presenter';
 import { renderThiefMessages } from './commands/thief.presenter';
@@ -104,6 +105,12 @@ async function handleInteractionCreate(api: InternalClient, interaction: Interac
   }
   if (!interaction.isButton() || !interaction.guildId) return;
   if (interaction.customId !== BIND_CUSTOM_ID && !interaction.customId.startsWith(`${BIND_CUSTOM_ID}:`)) return;
+  const verdict = componentThrottle.take(interaction.user.id);
+  if (verdict !== 'ok') {
+    if (verdict === 'warn') log.warn({ event: 'component_throttled' }, 'user throttled');
+    await interaction.reply({ content: '⏳', flags: MessageFlags.Ephemeral }).catch(() => undefined);
+    return;
+  }
   try {
     const user = await api.post<{ isBanned: boolean; locale: 'en' | 'pt' | 'ja' | 'es' | null }>(
       '/internal/v1/users/ensure',

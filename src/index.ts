@@ -40,6 +40,9 @@ async function drainNotify(bot: Client): Promise<void> {
 async function main(): Promise<void> {
   const token = process.env.DISCORD_TOKEN;
   if (!token) throw new Error('DISCORD_TOKEN ausente');
+  // Sem o segredo, o cliente cairia no placeholder de dev, que é público no repositório.
+  if (process.env.NODE_ENV === 'production' && !process.env.INTERNAL_API_SECRET?.trim())
+    throw new Error('INTERNAL_API_SECRET ausente');
   const stopTelemetry = installTelemetry(logger);
 
   initCommands(internalClient);
@@ -51,6 +54,9 @@ async function main(): Promise<void> {
       GatewayIntentBits.MessageContent,
     ],
     partials: [Partials.Channel],
+    // Texto de usuário (nomes, séries, apelidos) ecoa nas respostas: nunca dispara @everyone,
+    // @here nem cargo. Pings de usuário continuam; quem precisa restringe com allowedMentions.
+    allowedMentions: { parse: ['users'], repliedUser: true },
   });
 
   registerEvents(bot, internalClient);
@@ -96,10 +102,17 @@ async function main(): Promise<void> {
         }
       })
       .catch((err) => captureError(err, { component: 'command-registration', phase: 'ready' }));
-    notifyTimer = setInterval(
-      () => void drainNotify(bot).catch((err) => captureError(err, { component: 'notifications' })),
-      5_000,
-    );
+    // Uma drenagem por vez: entregar um lote de DMs pode passar do intervalo.
+    let draining = false;
+    notifyTimer = setInterval(() => {
+      if (draining) return;
+      draining = true;
+      void drainNotify(bot)
+        .catch((err) => captureError(err, { component: 'notifications' }))
+        .finally(() => {
+          draining = false;
+        });
+    }, 5_000);
     notifyTimer.unref();
   });
   bot.on(Events.GuildCreate, (guild) => {

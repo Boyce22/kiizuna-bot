@@ -56,3 +56,59 @@ describe('InternalClient.call', () => {
     });
   });
 });
+
+/** Registra cada chamada (caminho e cabeçalhos) e responde 200 com `body`. */
+function recordCalls(body: unknown = {}): Array<{ url: string; headers: Record<string, string> }> {
+  const calls: Array<{ url: string; headers: Record<string, string> }> = [];
+  globalThis.fetch = (async (url: string, init: RequestInit) => {
+    calls.push({ url, headers: init.headers as Record<string, string> });
+    return new Response(JSON.stringify(body), { status: 200 });
+  }) as typeof fetch;
+  return calls;
+}
+
+describe('InternalClient: assinatura', () => {
+  it('cada requisição leva um nonce novo', async () => {
+    const calls = recordCalls();
+    await client.post('/internal/v1/x', { a: 1 });
+    await client.post('/internal/v1/x', { a: 1 });
+    const [first, second] = calls.map((c) => c.headers['X-Kizuna-Nonce']);
+    assert.match(first, /^[a-f0-9]{32}$/);
+    assert.notEqual(first, second);
+    assert.notEqual(calls[0].headers['X-Kizuna-Signature'], calls[1].headers['X-Kizuna-Signature']);
+  });
+});
+
+describe('InternalClient: config da guild em cache', () => {
+  const ensure = '/internal/v1/guilds/ensure';
+
+  it('mensagens da mesma guild não repetem o ensure', async () => {
+    const api = new InternalClient('http://api.test', 'secret');
+    const calls = recordCalls({ prefix: 'k!' });
+    await Promise.all([api.post(ensure, { guildId: 'g1' }), api.post(ensure, { guildId: 'g1' })]);
+    await api.post(ensure, { guildId: 'g1' });
+    await api.post(ensure, { guildId: 'g2' });
+    assert.equal(calls.length, 2);
+  });
+
+  it('setup da guild invalida o cache dela', async () => {
+    const api = new InternalClient('http://api.test', 'secret');
+    const calls = recordCalls({ prefix: 'k!' });
+    await api.post(ensure, { guildId: 'g1' });
+    await api.post('/internal/v1/guilds/setup', { guildId: 'g1', action: 'prefix', value: '!' });
+    await api.post(ensure, { guildId: 'g1' });
+    assert.deepEqual(
+      calls.map((c) => c.url.replace('http://api.test', '')),
+      [ensure, '/internal/v1/guilds/setup', ensure],
+    );
+  });
+
+  it('falha não fica em cache', async () => {
+    const api = new InternalClient('http://api.test', 'secret');
+    respond(500, { code: 'INTERNAL' });
+    await assert.rejects(api.post(ensure, { guildId: 'g1' }));
+    const calls = recordCalls({ prefix: 'k!' });
+    await api.post(ensure, { guildId: 'g1' });
+    assert.equal(calls.length, 1);
+  });
+});

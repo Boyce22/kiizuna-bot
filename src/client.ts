@@ -1,13 +1,24 @@
 import { performance } from 'node:perf_hooks';
 
 import type { ErrorCode } from './api-error-codes';
-import { canonicalPath, signInternalRequest } from './hmac';
+import { newNonce, signInternalRequest } from './hmac';
 import { contextualLogger, currentLogContext } from './observability/context';
 import { newCorrelationId } from './observability/logger';
 import { recordApiRequest } from './observability/telemetry';
 
 const DEFAULT_INTERNAL_API_URL = 'http://127.0.0.1:3001';
 const DEFAULT_INTERNAL_API_SECRET = 'dev-internal-api-secret-change-me';
+/** Requisição que passa disso falha em vez de segurar o comando (e a memória) indefinidamente. */
+const REQUEST_TIMEOUT_MS = 15_000;
+
+const GUILD_ENSURE_PATH = '/internal/v1/guilds/ensure';
+const GUILD_SETUP_PATH = '/internal/v1/guilds/setup';
+/**
+ * Config da guild (prefixo, canais, modo) em cache curto: toda mensagem de toda guild passa pelo
+ * prefixo, e sem cache cada mensagem de chat viraria uma requisição à API. O `setup` invalida na hora.
+ */
+const GUILD_CONFIG_TTL_MS = 30_000;
+const GUILD_CONFIG_MAX_ENTRIES = 50_000;
 
 function configuredValue(value: string | undefined, fallback: string): string {
   const normalized = value?.trim();
@@ -38,11 +49,42 @@ export class InternalClient {
     private readonly secret = configuredValue(process.env.INTERNAL_API_SECRET, DEFAULT_INTERNAL_API_SECRET),
   ) {}
 
+  private readonly guildConfigs = new Map<string, { expiresAt: number; value: Promise<unknown> }>();
+
   async post<T>(path: string, body: unknown = {}): Promise<T> {
-    const pathname = canonicalPath(path.startsWith('/') ? path : `/${path}`);
+    const pathname = path.startsWith('/') ? path : `/${path}`;
+    const guildId = guildIdOf(body);
+    if (pathname === GUILD_ENSURE_PATH && guildId) return this.cachedGuildConfig<T>(guildId, body);
+    try {
+      return await this.send<T>(pathname, body);
+    } finally {
+      if (pathname === GUILD_SETUP_PATH && guildId) this.guildConfigs.delete(guildId);
+    }
+  }
+
+  private cachedGuildConfig<T>(guildId: string, body: unknown): Promise<T> {
+    const now = Date.now();
+    const hit = this.guildConfigs.get(guildId);
+    if (hit && hit.expiresAt > now) return hit.value as Promise<T>;
+    if (this.guildConfigs.size >= GUILD_CONFIG_MAX_ENTRIES) {
+      for (const [key, entry] of this.guildConfigs) if (entry.expiresAt <= now) this.guildConfigs.delete(key);
+      if (this.guildConfigs.size >= GUILD_CONFIG_MAX_ENTRIES) this.guildConfigs.clear();
+    }
+    // A promessa entra no cache: mensagens simultâneas da mesma guild dividem uma requisição só.
+    const value = this.send<T>(GUILD_ENSURE_PATH, body);
+    const entry = { expiresAt: now + GUILD_CONFIG_TTL_MS, value };
+    this.guildConfigs.set(guildId, entry);
+    value.catch(() => {
+      if (this.guildConfigs.get(guildId) === entry) this.guildConfigs.delete(guildId);
+    });
+    return value;
+  }
+
+  private async send<T>(pathname: string, body: unknown): Promise<T> {
     const raw = JSON.stringify(body ?? {});
     const timestamp = String(Math.floor(Date.now() / 1000));
-    const signature = signInternalRequest(this.secret, timestamp, 'POST', pathname, raw);
+    const nonce = newNonce();
+    const signature = signInternalRequest(this.secret, timestamp, nonce, 'POST', pathname, raw);
     const requestId = currentLogContext()?.requestId ?? newCorrelationId();
     const log = contextualLogger({ component: 'internal-api', method: 'POST', path: pathname });
     const startedAt = performance.now();
@@ -53,9 +95,11 @@ export class InternalClient {
           'Content-Type': 'application/json',
           'X-Request-ID': requestId,
           'X-Kizuna-Timestamp': timestamp,
+          'X-Kizuna-Nonce': nonce,
           'X-Kizuna-Signature': signature,
         },
         body: raw,
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
       const elapsedMs = performance.now() - startedAt;
       recordApiRequest(pathname, res.status, elapsedMs);
@@ -95,6 +139,11 @@ export class InternalClient {
       throw err;
     }
   }
+}
+
+function guildIdOf(body: unknown): string | undefined {
+  const guildId = (body as { guildId?: unknown } | null)?.guildId;
+  return typeof guildId === 'string' ? guildId : undefined;
 }
 
 export const internalClient = new InternalClient();

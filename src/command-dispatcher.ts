@@ -3,6 +3,7 @@ import { performance } from 'node:perf_hooks';
 import { type InternalClient, InternalApiError } from './client';
 import type { CommandInvocation } from './command-invocation';
 import { commandRegistry } from './command-registry';
+import { commandThrottle } from './command-throttle';
 import { buildContext } from './context';
 import { makeTranslator, resolveLocale } from './i18n/i18n.service';
 import type { GuildConfigView } from './interfaces';
@@ -79,6 +80,21 @@ async function dispatchWithinContext(
   const guildTranslator = makeTranslator(resolveLocale(null, config.defaultLocale), {
     prefix: config.prefix,
   });
+
+  const userId = invocation.author.id;
+  const verdict = commandThrottle.take(userId);
+  if (verdict !== 'ok') {
+    if (verdict === 'warn') {
+      log.warn({ event: 'command_throttled' }, 'user throttled');
+      const seconds = commandThrottle.retryAfterSeconds(userId);
+      await invocation.reply(guildTranslator('error.COOLDOWN', { seconds }), true).catch(() => undefined);
+    } else if (invocation.source === 'slash') {
+      // Slash já foi adiado: sem resposta, o Discord deixaria o "pensando..." pendurado.
+      await invocation.reply('⏳', true).catch(() => undefined);
+    }
+    finish('throttled');
+    return;
+  }
 
   if (
     !command.bypassChannelRestriction &&
