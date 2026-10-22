@@ -10,6 +10,11 @@ const DEFAULT_INTERNAL_API_URL = 'http://127.0.0.1:3001';
 const DEFAULT_INTERNAL_API_SECRET = 'dev-internal-api-secret-change-me';
 /** Requisição que passa disso falha em vez de segurar o comando (e a memória) indefinidamente. */
 const REQUEST_TIMEOUT_MS = 15_000;
+/**
+ * API sobrecarregada (`OVERLOADED`) recusa antes de executar: repetir uma vez, com assinatura e
+ * nonce novos, é seguro. A espera é sorteada até este teto, para o comando não segurar o usuário.
+ */
+const OVERLOADED_RETRY_MAX_MS = 3_000;
 
 const GUILD_ENSURE_PATH = '/internal/v1/guilds/ensure';
 const GUILD_SETUP_PATH = '/internal/v1/guilds/setup';
@@ -56,7 +61,7 @@ export class InternalClient {
     const guildId = guildIdOf(body);
     if (pathname === GUILD_ENSURE_PATH && guildId) return this.cachedGuildConfig<T>(guildId, body);
     try {
-      return await this.send<T>(pathname, body);
+      return await this.sendRetryingOverload<T>(pathname, body);
     } finally {
       if (pathname === GUILD_SETUP_PATH && guildId) this.guildConfigs.delete(guildId);
     }
@@ -71,13 +76,23 @@ export class InternalClient {
       if (this.guildConfigs.size >= GUILD_CONFIG_MAX_ENTRIES) this.guildConfigs.clear();
     }
     // A promessa entra no cache: mensagens simultâneas da mesma guild dividem uma requisição só.
-    const value = this.send<T>(GUILD_ENSURE_PATH, body);
+    const value = this.sendRetryingOverload<T>(GUILD_ENSURE_PATH, body);
     const entry = { expiresAt: now + GUILD_CONFIG_TTL_MS, value };
     this.guildConfigs.set(guildId, entry);
     value.catch(() => {
       if (this.guildConfigs.get(guildId) === entry) this.guildConfigs.delete(guildId);
     });
     return value;
+  }
+
+  private async sendRetryingOverload<T>(pathname: string, body: unknown): Promise<T> {
+    try {
+      return await this.send<T>(pathname, body);
+    } catch (err) {
+      if (!(err instanceof InternalApiError) || err.code !== 'OVERLOADED') throw err;
+      await new Promise((resolve) => setTimeout(resolve, OVERLOADED_RETRY_MAX_MS * (0.3 + 0.7 * Math.random())));
+      return this.send<T>(pathname, body);
+    }
   }
 
   private async send<T>(pathname: string, body: unknown): Promise<T> {

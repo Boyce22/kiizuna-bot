@@ -112,3 +112,27 @@ describe('InternalClient: config da guild em cache', () => {
     assert.equal(calls.length, 1);
   });
 });
+
+describe('InternalClient: API sobrecarregada', () => {
+  it('OVERLOADED repete uma vez, com nonce novo', async () => {
+    const nonces: string[] = [];
+    globalThis.fetch = (async (_url: string, init: RequestInit) => {
+      nonces.push((init.headers as Record<string, string>)['X-Kizuna-Nonce']);
+      if (nonces.length === 1) return new Response(JSON.stringify({ code: 'OVERLOADED' }), { status: 503 });
+      return new Response(JSON.stringify({ price: 300 }), { status: 200 });
+    }) as typeof fetch;
+    assert.deepEqual(await client.call('/internal/v1/x'), { ok: true, price: 300 });
+    assert.equal(nonces.length, 2);
+    assert.notEqual(nonces[0], nonces[1]);
+  });
+
+  it('outro 503 não repete', async () => {
+    let calls = 0;
+    globalThis.fetch = (async () => {
+      calls++;
+      return new Response(JSON.stringify({ code: 'NOT_READY' }), { status: 503 });
+    }) as typeof fetch;
+    await assert.rejects(client.call('/internal/v1/x'));
+    assert.equal(calls, 1);
+  });
+});
