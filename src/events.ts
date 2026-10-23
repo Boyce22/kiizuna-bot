@@ -6,9 +6,9 @@ import type { InternalClient } from './client';
 import { dispatchCommand } from './command-dispatcher';
 import { MessageCommandInvocation, SlashCommandInvocation } from './command-invocation';
 import { componentThrottle } from './command-throttle';
-import { applyThiefEvent } from './commands/thief-role.util';
-import { renderBindResult } from './commands/bind.presenter';
-import { renderThiefMessages } from './commands/thief.presenter';
+import { publishBindOutcome } from './commands/bind-outcome';
+import { PacksCommands } from './commands/packs.commands';
+import { PACKS_CUSTOM_ID } from './commands/packs.presenter';
 import { makeTranslator, resolveLocale } from './i18n/i18n.service';
 import type { GuildConfigView } from './interfaces';
 import { contextualLogger, runWithLogContext } from './observability/context';
@@ -20,9 +20,16 @@ const FALLBACK_ERROR_EMOJI = '❌';
 const BANNED_MESSAGE = '🚫 Você está banido e não pode usar o bot.';
 const BIND_CUSTOM_ID = 'bind';
 
+/** Botões tratados aqui: vínculo de carta (legado) e packs. */
+function isHandledButton(customId: string): boolean {
+  if (customId === BIND_CUSTOM_ID || customId.startsWith(`${BIND_CUSTOM_ID}:`)) return true;
+  return customId.startsWith(`${PACKS_CUSTOM_ID}:`);
+}
+
 export function registerEvents(client: Client, api: InternalClient): void {
+  const packs = new PacksCommands(api);
   client.on(Events.MessageCreate, (m) => void onMessageCreate(api, m));
-  client.on(Events.InteractionCreate, (i) => void onInteractionCreate(api, i));
+  client.on(Events.InteractionCreate, (i) => void onInteractionCreate(api, packs, i));
 }
 
 async function onMessageCreate(api: InternalClient, message: Message): Promise<void> {
@@ -64,7 +71,7 @@ async function handleMessageCreate(api: InternalClient, message: Message<true>):
   }
 }
 
-async function onInteractionCreate(api: InternalClient, interaction: Interaction): Promise<void> {
+async function onInteractionCreate(api: InternalClient, packs: PacksCommands, interaction: Interaction): Promise<void> {
   const source = interaction.isChatInputCommand() ? 'slash' : 'component';
   await runWithLogContext(
     {
@@ -76,11 +83,11 @@ async function onInteractionCreate(api: InternalClient, interaction: Interaction
       discordUserId: interaction.user.id,
       discord: interactionDiscordContext(interaction),
     },
-    () => handleInteractionCreate(api, interaction),
+    () => handleInteractionCreate(api, packs, interaction),
   );
 }
 
-async function handleInteractionCreate(api: InternalClient, interaction: Interaction): Promise<void> {
+async function handleInteractionCreate(api: InternalClient, packs: PacksCommands, interaction: Interaction): Promise<void> {
   const log = contextualLogger();
   if (interaction.isChatInputCommand()) {
     try {
@@ -107,7 +114,7 @@ async function handleInteractionCreate(api: InternalClient, interaction: Interac
     return;
   }
   if (!interaction.isButton() || !interaction.guildId) return;
-  if (interaction.customId !== BIND_CUSTOM_ID && !interaction.customId.startsWith(`${BIND_CUSTOM_ID}:`)) return;
+  if (!isHandledButton(interaction.customId)) return;
   const verdict = componentThrottle.take(interaction.user.id);
   if (verdict !== 'ok') {
     if (verdict === 'warn') log.warn({ event: 'component_throttled' }, 'user throttled');
@@ -124,19 +131,24 @@ async function handleInteractionCreate(api: InternalClient, interaction: Interac
       return;
     }
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-    const guildConfig = await api.post<{
-      prefix: string;
-      defaultLocale: 'en' | 'pt' | 'ja' | 'es';
-      scopeMode: 'guild' | 'global' | null;
-    }>(
-      '/internal/v1/guilds/ensure',
-      { guildId: interaction.guildId },
-    );
+    const guildConfig = await api.post<
+      Pick<GuildConfigView, 'prefix' | 'defaultLocale' | 'scopeMode' | 'rollIntervalMinutes'>
+    >('/internal/v1/guilds/ensure', { guildId: interaction.guildId });
     const t = makeTranslator(resolveLocale(user.locale, guildConfig.defaultLocale), {
       prefix: guildConfig.prefix,
     });
     if (!guildConfig.scopeMode) {
       await interaction.editReply({ content: t('error.GUILD_NOT_CONFIGURED', { prefix: guildConfig.prefix }) });
+      return;
+    }
+    if (interaction.customId.startsWith(`${PACKS_CUSTOM_ID}:`)) {
+      const actor = {
+        discordId: interaction.user.id,
+        username: interaction.user.username,
+        guildId: interaction.guildId,
+        guildConfig,
+      };
+      await packs.handleComponent(interaction, actor, t);
       return;
     }
     const [, characterIdRaw, summonerId, summonedAtRaw] = interaction.customId.split(':');
@@ -151,30 +163,7 @@ async function handleInteractionCreate(api: InternalClient, interaction: Interac
       summonerId,
       summonedAtMs,
     });
-    const result = reviveBindResult(raw);
-    const { content, announce, announceMentions } = renderBindResult(result, t);
-    await interaction.editReply({ content });
-    if (announce && interaction.channel?.isSendable()) {
-      await interaction.channel.send({
-        content: announce,
-        allowedMentions: { users: announceMentions ?? [] },
-      });
-    }
-    if (result.ok && result.kind === 'claim' && result.thiefEvent && interaction.guild) {
-      await applyThiefEvent(interaction.guild, api, result.thiefEvent, t);
-      const thiefMessages = renderThiefMessages(
-        result.thiefEvent,
-        result.binderId,
-        result.summonerId,
-        result.name,
-        t,
-      );
-      for (const msg of thiefMessages) {
-        if (interaction.channel?.isSendable()) {
-          await interaction.channel.send({ content: msg.content, allowedMentions: { users: msg.mentions } });
-        }
-      }
-    }
+    await publishBindOutcome(reviveBindResult(raw), interaction, api, t);
   } catch (err) {
     log.error({ err, phase: 'component-event', customId: interaction.customId }, 'interaction handling failed');
     if (interaction.deferred || interaction.replied) {

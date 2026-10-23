@@ -47,6 +47,50 @@ export const es: LocaleTree = {
     announce: '🥷 ¡{thief} se llevó **{name}** antes que nadie! 💨',
     wishlist_ping: '🥷 {users}, ¡{thief} te robó **{name}** de tu lista de deseos en tus narices! 💔',
   },
+  packs: {
+    title: '🎴 Vitrina de sobres',
+    charges: '🎟️ Elecciones: **{left}** · se recargan {time}',
+    charges_full: '🎟️ Elecciones: **{left}**',
+    held: '🎒 Guardados: **{total}/{max}** · ábrelos con {prefix}open',
+    held_none: '🎒 No tienes sobres guardados.',
+    pool: '{size} personajes',
+    refresh_button: '🔄 Cambiar vitrina ({left})',
+    resume_button: '🃏 Sobre pendiente',
+    open_button: '📦 Abrir ahora',
+    picked: '🎒 **{name}** guardado ({amount} en tu inventario).',
+    opening: '📦 Sobre abierto en el canal.',
+    no_pending: 'Ningún sobre espera tu elección.',
+    open_title: '📦 {user} abrió **{pack}**',
+    open_hint: 'Elige una carta. Las demás quedan en la mesa por 10 minutos.',
+    leftover_until: '🗡️ Las sobras se pueden robar hasta {time}',
+    take_button: '{index}. {name}',
+    steal_button: '🗡️ {name}',
+    owned: '💠 ya tiene dueño',
+    took_mark: '💍 se la quedó {user}',
+    stolen_mark: '🥷 robada',
+    took: '💍 ¡**{name}** es tuya!',
+    took_dupe: '💠 **{name}** ya tenía dueño: duplicado de **+{coins}** coins.',
+    open_pick_prompt: '🎒 ¿Qué sobre quieres abrir?',
+    open_pick_placeholder: 'Elige un sobre',
+    open_pick_timeout: '⌛ Se acabó el tiempo.',
+    usage_open: '{prefix}open [sobre]',
+    wishlist_ping: '🔔 {users}, **{name}** de tu lista está en la mesa. ¡Róbala!',
+    anime_wishlist_ping: '🎌 {users}, **{name}** (de **{series}**) está en la mesa. ¡Róbala!',
+    NO_ROLLS: '⏳ Te quedaste sin elecciones. Se recargan {time}.',
+    NONE_LEFT: '⏳ Sin cambios de vitrina. Se reinician {time}.',
+    VIP_REQUIRED: '🔒 Cambiar la vitrina es una ventaja VIP (Tomodachi+).',
+    PACK_NOT_IN_SHOWCASE: '🔄 La vitrina cambió. Usa {prefix}packs de nuevo.',
+    PACK_INVENTORY_FULL: '🎒 Inventario lleno ({max} sobres). Abre uno con {prefix}open.',
+    NO_PACKS: '🎒 No tienes ese sobre. Mira la vitrina con {prefix}packs.',
+    PACK_NOT_FOUND: '❓ Sobre no encontrado.',
+    EMPTY_POOL: '❓ Este sobre no tiene personajes ahora.',
+    OPENING_NOT_FOUND: '❓ Esa apertura ya no existe.',
+    ALREADY_PICKED: 'Ya elegiste la carta de este sobre.',
+    NOT_IN_PACK: 'Esa carta no está en este sobre.',
+    NOT_STEALABLE: 'Las sobras de este sobre no se pueden robar.',
+    OWN_PACK: 'No puedes robar de tu propio sobre.',
+    CARD_TAKEN: 'Esa carta ya no está.',
+  },
   thief: {
     role_name: 'Ladrón',
     new: '👑 ¡{thief} llegó a {count} robos y ahora es el **Ladrón** del servidor!',
@@ -240,7 +284,7 @@ export const es: LocaleTree = {
   vip: {
     overview: {
       title: '✨ VIP — tier actual: {tier}',
-      current: '🎲 {rolls} rolls · ⭐ {wishlist} espacios de lista · 💍 cooldown de claim {cooldown}min · 🗡️ cooldown de robo {steal}min',
+      current: '🎴 {packs} sobres · ⭐ {wishlist} espacios de lista · 💍 cooldown de claim {cooldown}min · 🗡️ cooldown de robo {steal}min',
       tiers: 'Tiers',
       upgrade: 'Sube con {prefix}vip checkout <tier>',
     },
@@ -248,10 +292,10 @@ export const es: LocaleTree = {
     perks: {
       title: '✨ Privilegios — {tier}',
       body:
-        '🎲 Rolls/intervalo: **{rolls}**\n' +
+        '🎴 Sobres/intervalo: **{packs}**\n' +
         '💍 Cooldown del claim: **{cooldown} min**\n' +
         '🗡️ Cooldown del robo: **{steal} min**\n' +
-        '🔄 Rerolls/día: **{rerolls}**\n' +
+        '🔄 Cambios de vitrina/día: **{rerolls}**\n' +
         '🎁 Multiplicador del tributo: **×{tribute}**\n' +
         '⭐ Slots de wishlist: **{wishlist}**\n' +
         '🖼️ Slots de showcase: **{showcase}**\n' +
@@ -276,11 +320,6 @@ export const es: LocaleTree = {
       none: 'No se encontró suscripción para {user}.',
       found: '🔎 {user}: {tier} · {status} · {provider} · termina {ends}',
     },
-  },
-  reroll: {
-    vip_required: '🔒 Reroll es un perk VIP (Tomodachi+).',
-    no_summon: '❓ No hay invocación previa para repetir. Usa {prefix}summon primero.',
-    none_left: '⏳ Sin rerolls. Se reinician {time}.',
   },
   soulmate: {
     vip_required: '🔒 Soulmate es un perk VIP (Kizuna+).',
@@ -454,8 +493,8 @@ export const es: LocaleTree = {
     usage: '❓ Uso (dueño): `{prefix}clearmessages [#canal]` — escanea y elimina mensajes del bot + comandos.',
   },
   command: {
-    summon: { description: 'Invoca personajes aleatorios' },
-    bind: { description: 'Vincula un personaje de la invocación activa' },
+    packs: { description: 'Muestra la vitrina de sobres' },
+    open: { description: 'Abre un sobre guardado' },
     collection: { description: 'Muestra una colección (de este servidor)' },
     wishlist: { description: 'Gestiona tu lista de deseos (add/remove/clear/list)' },
     profile: { description: 'Muestra la tarjeta de perfil del servidor' },
@@ -470,7 +509,6 @@ export const es: LocaleTree = {
     vip: { description: 'VIP: resumen, privilegios, estado y checkout' },
     vipAdmin: { description: 'Solo dueño: otorgar/consultar VIP' },
     marketAdmin: { description: 'Solo dueño: administra el mercado (add/remove/list)' },
-    reroll: { description: 'Repite tu última invocación (VIP)' },
     soulmate: { description: 'Define tu personaje soulmate (Kizuna+)' },
     globalprofile: { description: 'Perfil cross-server' },
     globaltop: { description: 'Leaderboard global (harem/bond/UR)' },

@@ -12,12 +12,11 @@ import { GlobalCommands } from './commands/global.commands';
 import { HelpCommands } from './commands/help.commands';
 import { MarketAdminCommands } from './commands/market-admin.commands';
 import { MarketCommands } from './commands/market.commands';
+import { PacksCommands } from './commands/packs.commands';
 import { ProfileCommands } from './commands/profile.commands';
-import { RerollCommands } from './commands/reroll.commands';
 import { SellCommands } from './commands/sell.commands';
 import { SettingsCommands } from './commands/settings.commands';
 import { SiteCommands } from './commands/site.commands';
-import { SummonCommands } from './commands/summon.commands';
 import { TradeCommands } from './commands/trade.commands';
 import { VipCommands } from './commands/vip.commands';
 import { WishlistCommands } from './commands/wishlist.commands';
@@ -38,7 +37,7 @@ function withMetadata(executors: CommandExecutor[]): Command[] {
 export function initCommands(api: InternalClient): void {
   commandGroups.length = 0;
   commandGroups.push(
-    { key: 'gacha', commands: withMetadata(new SummonCommands(api).commands) },
+    { key: 'gacha', commands: withMetadata(new PacksCommands(api).commands) },
     { key: 'collection', commands: withMetadata(new CollectionCommands(api).commands) },
     { key: 'economy', commands: withMetadata(new EconomyCommands(api).commands) },
     {
@@ -70,7 +69,7 @@ export function initCommands(api: InternalClient): void {
       ]),
     },
     { key: 'global', commands: withMetadata(new GlobalCommands(api).commands) },
-    { key: 'vip', commands: withMetadata([...new VipCommands(api).commands, ...new RerollCommands(api).commands]) },
+    { key: 'vip', commands: withMetadata(new VipCommands(api).commands) },
     {
       key: 'settings',
       commands: withMetadata([...new SettingsCommands(api).commands, ...new SiteCommands(api).commands]),

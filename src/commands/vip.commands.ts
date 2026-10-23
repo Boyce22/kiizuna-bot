@@ -61,7 +61,7 @@ export class VipCommands {
         .setColor(perks.embedColor ?? 0x8a2be2)
         .setDescription(
           t('vip.perks.body', {
-            rolls: perks.rollsPerInterval,
+            packs: perks.packsPerInterval,
             cooldown: perks.bindCooldownMin,
             steal: perks.stealCooldownMin,
             rerolls: perks.rerollsPerDay,
@@ -113,7 +113,7 @@ export class VipCommands {
       .setColor(perks.embedColor ?? 0x8a2be2)
       .setDescription(
         t('vip.overview.current', {
-          rolls: perks.rollsPerInterval,
+          packs: perks.packsPerInterval,
           wishlist: perks.wishlistSlots,
           cooldown: perks.bindCooldownMin,
           steal: perks.stealCooldownMin,

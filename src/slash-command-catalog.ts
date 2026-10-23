@@ -46,9 +46,9 @@ type DescriptionLocalizations = Record<'en-US' | 'es-ES' | 'ja', string>;
 
 const rootLocalizations: Record<string, DescriptionLocalizations> = {
   gacha: {
-    'en-US': 'Summon characters and manage your rolls',
-    'es-ES': 'Invoca personajes y administra tus tiradas',
-    ja: 'キャラクターを召喚してロールを管理します',
+    'en-US': 'Pick and open card packs',
+    'es-ES': 'Elige y abre sobres de cartas',
+    ja: 'カードパックを選んで開封します',
   },
   collection: {
     'en-US': 'Browse and organize your character collection',
@@ -108,7 +108,7 @@ const rootLocalizations: Record<string, DescriptionLocalizations> = {
 };
 
 export const slashRoots: SlashRootSpec[] = [
-  { name: 'gacha', description: 'Invoque personagens e gerencie seus rolls' },
+  { name: 'gacha', description: 'Escolha e abra packs de cartas' },
   { name: 'collection', description: 'Consulte e organize sua coleção de personagens' },
   { name: 'profile', description: 'Consulte perfis, galerias e vínculos' },
   { name: 'economy', description: 'Consulte seu saldo e use recursos sociais' },
@@ -170,23 +170,14 @@ const rarityChoices = ['R', 'SR', 'SSR', 'UR'].map((value) => ({ name: value, va
 const tierChoices = ['kizuna', 'kizuna+', 'eternal'].map((value) => ({ name: value, value }));
 
 export const slashRoutes: SlashRouteSpec[] = [
+  { root: 'gacha', subcommand: 'packs', description: 'Veja a vitrine de packs e escolha um', legacyCommand: 'packs' },
   {
     root: 'gacha',
-    subcommand: 'summon',
-    description: 'Invoque um personagem aleatório',
-    legacyCommand: 'summon',
-    options: [
-      stringOption('tipo', 'Escolha waifu, husbando ou todos', true, 'arg', undefined, [
-        { name: 'Waifu', value: 'waifu' },
-        { name: 'Husbando', value: 'husbando' },
-        { name: 'Todos', value: 'all' },
-      ]),
-      booleanOption('nsfw', 'Inclua personagens marcados como adultos'),
-      stringOption('anime', 'Restrinja a invocação a um anime', false, 'flag', 'target'),
-    ],
+    subcommand: 'open',
+    description: 'Abra um pack guardado',
+    legacyCommand: 'open',
+    options: [stringOption('pack', 'Nome do pack', false)],
   },
-  { root: 'gacha', subcommand: 'bind', description: 'Vincule o personagem invocado', legacyCommand: 'bind' },
-  { root: 'gacha', subcommand: 'reroll', description: 'Repita sua última invocação VIP', legacyCommand: 'reroll' },
 
   {
     root: 'collection',
@@ -470,6 +461,7 @@ const groupDescriptionLocalizations: Record<string, DescriptionLocalizations> = 
 };
 
 const optionDescriptionLocalizations: Record<string, DescriptionLocalizations> = {
+  pack: { 'en-US': 'Enter the pack name', 'es-ES': 'Escribe el nombre del sobre', ja: 'パック名を入力します' },
   tipo: { 'en-US': 'Select the type', 'es-ES': 'Selecciona el tipo', ja: '種類を選択します' },
   nsfw: { 'en-US': 'Include adult content', 'es-ES': 'Incluye contenido para adultos', ja: '成人向けコンテンツを含めます' },
   anime: { 'en-US': 'Enter the anime name', 'es-ES': 'Escribe el nombre del anime', ja: 'アニメ名を入力します' },

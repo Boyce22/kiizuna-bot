@@ -11,7 +11,7 @@ export interface VipPerks {
   emoji: string;
   embedColor: number | null; // null = usa a cor padrão por tipo (waifu/husbando)
   priceUsd: number;
-  rollsPerInterval: number;
+  packsPerInterval: number; // cargas de pack por janela (escolhas na vitrine); espelha a API
   bindCooldownMin: number; // cooldown do claim (vincular summon próprio)
   stealCooldownMin: number; // cooldown do roubo (vincular summon alheio)
   tributeMultiplier: number;
@@ -35,7 +35,7 @@ export const VIP_TIERS: Record<VipTierKey, VipPerks> = {
     emoji: '',
     embedColor: null,
     priceUsd: 0,
-    rollsPerInterval: 10,
+    packsPerInterval: 2,
     bindCooldownMin: 60,
     stealCooldownMin: 60,
     tributeMultiplier: 1,
@@ -55,7 +55,7 @@ export const VIP_TIERS: Record<VipTierKey, VipPerks> = {
     emoji: '🥉',
     embedColor: 0xcd7f32,
     priceUsd: 2.99,
-    rollsPerInterval: 14,
+    packsPerInterval: 3,
     bindCooldownMin: 45,
     stealCooldownMin: 45,
     tributeMultiplier: 1.25,
@@ -75,7 +75,7 @@ export const VIP_TIERS: Record<VipTierKey, VipPerks> = {
     emoji: '🥈',
     embedColor: 0xc0c0c0,
     priceUsd: 5.99,
-    rollsPerInterval: 18,
+    packsPerInterval: 4,
     bindCooldownMin: 30,
     stealCooldownMin: 30,
     tributeMultiplier: 1.5,
@@ -95,7 +95,7 @@ export const VIP_TIERS: Record<VipTierKey, VipPerks> = {
     emoji: '🥇',
     embedColor: 0xffd700,
     priceUsd: 9.99,
-    rollsPerInterval: 24,
+    packsPerInterval: 5,
     bindCooldownMin: 20,
     stealCooldownMin: 20,
     tributeMultiplier: 2,
@@ -115,7 +115,7 @@ export const VIP_TIERS: Record<VipTierKey, VipPerks> = {
     emoji: '💎',
     embedColor: 0xb9f2ff,
     priceUsd: 14.99,
-    rollsPerInterval: 30,
+    packsPerInterval: 6,
     bindCooldownMin: 10,
     stealCooldownMin: 10,
     tributeMultiplier: 3,

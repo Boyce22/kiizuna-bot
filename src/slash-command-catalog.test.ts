@@ -18,7 +18,6 @@ const expectedLegacyCommands = [
   'addchar',
   'animewishlist',
   'auction',
-  'bind',
   'boss',
   'charimage',
   'clearmessages',
@@ -35,10 +34,11 @@ const expectedLegacyCommands = [
   'language',
   'market',
   'market-admin',
+  'open',
+  'packs',
   'profile',
   'ranks',
   'removechar',
-  'reroll',
   'resetclaim',
   'resetrolls',
   'sell',
@@ -46,7 +46,6 @@ const expectedLegacyCommands = [
   'showcase',
   'site',
   'soulmate',
-  'summon',
   'trade',
   'vip',
   'vip-admin',
@@ -78,7 +77,7 @@ describe('slash command catalog', () => {
     assert.equal(commandMetadata.get('setup')?.bypassChannelRestriction, true);
     assert.equal(commandMetadata.get('help')?.availableBeforeSetup, true);
     assert.equal(commandMetadata.get('language')?.availableBeforeSetup, true);
-    assert.equal(commandMetadata.get('summon')?.availableBeforeSetup, undefined);
+    assert.equal(commandMetadata.get('packs')?.availableBeforeSetup, undefined);
 
     const payloads = buildSlashCommandPayloads();
     assert.equal(
@@ -132,16 +131,12 @@ describe('slash command catalog', () => {
   });
 
   it('maps typed slash options to the legacy executor input', () => {
-    const values = new Map<string, unknown>([
-      ['tipo', 'waifu'],
-      ['nsfw', true],
-      ['anime', 'Naruto'],
-    ]);
+    const values = new Map<string, unknown>([['pack', 'Romance']]);
     const interaction = {
       commandName: 'gacha',
       options: {
         getSubcommandGroup: () => null,
-        getSubcommand: () => 'summon',
+        getSubcommand: () => 'open',
         getString: (name: string) => values.get(name) ?? null,
         getInteger: (name: string) => values.get(name) ?? null,
         getBoolean: (name: string) => values.get(name) ?? null,
@@ -151,9 +146,9 @@ describe('slash command catalog', () => {
     } as unknown as ChatInputCommandInteraction<'cached'>;
 
     assert.deepEqual(parseSlashCommand(interaction)?.parsed, {
-      name: 'summon',
-      args: ['waifu'],
-      flags: { nsfw: true, target: 'Naruto' },
+      name: 'open',
+      args: ['Romance'],
+      flags: {},
     });
   });
 
@@ -178,8 +173,8 @@ describe('slash command catalog', () => {
 
   it('renders legacy usage text with the configured prefix', () => {
     const t = makeTranslator('pt', { prefix: '?' });
-    assert.match(t('summon.usage'), /^\?/);
-    assert.ok(!t('summon.usage').includes('{prefix}'));
+    assert.match(t('packs.usage_open'), /^\?/);
+    assert.ok(!t('packs.usage_open').includes('{prefix}'));
   });
 
   it('keeps configured prefix parsing and slash parsing independent', () => {

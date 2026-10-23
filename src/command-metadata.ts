@@ -3,8 +3,8 @@ import type { Command } from './interfaces';
 export type CommandMetadata = Omit<Command, 'execute'>;
 
 const metadata = [
-  { name: 'summon', aliases: ['s'], descriptionKey: 'command.summon.description' },
-  { name: 'bind', aliases: ['b'], descriptionKey: 'command.bind.description' },
+  { name: 'packs', aliases: ['s', 'summon', 'pacotes', 'vitrine-packs'], descriptionKey: 'command.packs.description' },
+  { name: 'open', aliases: ['abrir', 'o'], descriptionKey: 'command.open.description' },
   { name: 'collection', aliases: ['col', 'harem'], descriptionKey: 'command.collection.description' },
   { name: 'coins', aliases: ['c', 'balance'], descriptionKey: 'command.coins.description' },
   { name: 'daily', aliases: ['tribute'], descriptionKey: 'command.tribute.description' },
@@ -27,7 +27,6 @@ const metadata = [
   { name: 'showcase', aliases: ['vitrine'], descriptionKey: 'command.showcase.description' },
   { name: 'vip', descriptionKey: 'command.vip.description' },
   { name: 'vip-admin', aliases: ['vipadmin'], descriptionKey: 'command.vipAdmin.description' },
-  { name: 'reroll', aliases: ['rr'], descriptionKey: 'command.reroll.description' },
   { name: 'site', aliases: ['web', 'conta'], descriptionKey: 'command.site.description' },
   { name: 'language', aliases: ['lang', 'idioma'], descriptionKey: 'command.language.description', availableBeforeSetup: true },
   { name: 'setup', aliases: ['config'], descriptionKey: 'command.setup.description', bypassChannelRestriction: true, availableBeforeSetup: true },

@@ -47,6 +47,50 @@ export const pt: LocaleTree = {
     announce: '🥷 {thief} fisgou **{name}** antes de todo mundo! 💨',
     wishlist_ping: '🥷 {users}, {thief} fisgou **{name}** da sua wishlist bem debaixo do seu nariz! 💔',
   },
+  packs: {
+    title: '🎴 Vitrine de packs',
+    charges: '🎟️ Escolhas: **{left}** · recarrega {time}',
+    charges_full: '🎟️ Escolhas: **{left}**',
+    held: '🎒 Guardados: **{total}/{max}** · abra com {prefix}open',
+    held_none: '🎒 Nenhum pack guardado.',
+    pool: '{size} personagens',
+    refresh_button: '🔄 Trocar vitrine ({left})',
+    resume_button: '🃏 Pack pendente',
+    open_button: '📦 Abrir agora',
+    picked: '🎒 **{name}** guardado ({amount} no inventário).',
+    opening: '📦 Pack aberto no canal.',
+    no_pending: 'Nenhum pack esperando sua escolha.',
+    open_title: '📦 {user} abriu **{pack}**',
+    open_hint: 'Escolha uma carta. As outras ficam na mesa por 10 minutos.',
+    leftover_until: '🗡️ Sobras roubáveis até {time}',
+    take_button: '{index}. {name}',
+    steal_button: '🗡️ {name}',
+    owned: '💠 já tem dono',
+    took_mark: '💍 ficou com {user}',
+    stolen_mark: '🥷 roubada',
+    took: '💍 **{name}** é sua!',
+    took_dupe: '💠 **{name}** já tinha dono: duplicata de **+{coins}** coins.',
+    open_pick_prompt: '🎒 Qual pack abrir?',
+    open_pick_placeholder: 'Escolha um pack',
+    open_pick_timeout: '⌛ Tempo esgotado.',
+    usage_open: '{prefix}open [pack]',
+    wishlist_ping: '🔔 {users}, **{name}** da sua wishlist está na mesa. Dá para roubar!',
+    anime_wishlist_ping: '🎌 {users}, **{name}** (de **{series}**) está na mesa. Dá para roubar!',
+    NO_ROLLS: '⏳ Suas escolhas acabaram. Elas voltam {time}.',
+    NONE_LEFT: '⏳ Sem trocas de vitrine. Elas voltam {time}.',
+    VIP_REQUIRED: '🔒 Trocar a vitrine é um perk VIP (Tomodachi+).',
+    PACK_NOT_IN_SHOWCASE: '🔄 A vitrine mudou. Use {prefix}packs de novo.',
+    PACK_INVENTORY_FULL: '🎒 Inventário cheio ({max} packs). Abra algum com {prefix}open.',
+    NO_PACKS: '🎒 Você não tem esse pack. Veja a vitrine com {prefix}packs.',
+    PACK_NOT_FOUND: '❓ Pack não encontrado.',
+    EMPTY_POOL: '❓ Este pack está sem personagens agora.',
+    OPENING_NOT_FOUND: '❓ Essa abertura não existe mais.',
+    ALREADY_PICKED: 'Você já escolheu a carta desse pack.',
+    NOT_IN_PACK: 'Essa carta não está nesse pack.',
+    NOT_STEALABLE: 'As sobras desse pack não podem ser roubadas.',
+    OWN_PACK: 'Você não pode roubar do próprio pack.',
+    CARD_TAKEN: 'Essa carta já foi levada.',
+  },
   thief: {
     role_name: 'Ladrão',
     new: '👑 {thief} chegou a {count} roubos e agora é o **Ladrão** do servidor!',
@@ -240,7 +284,7 @@ export const pt: LocaleTree = {
   vip: {
     overview: {
       title: '✨ VIP — tier atual: {tier}',
-      current: '🎲 {rolls} rolls · ⭐ {wishlist} slots de wishlist · 💍 cooldown de claim {cooldown}min · 🗡️ cooldown de roubo {steal}min',
+      current: '🎴 {packs} packs · ⭐ {wishlist} slots de wishlist · 💍 cooldown de claim {cooldown}min · 🗡️ cooldown de roubo {steal}min',
       tiers: 'Tiers',
       upgrade: 'Suba com {prefix}vip checkout <tier>',
     },
@@ -248,10 +292,10 @@ export const pt: LocaleTree = {
     perks: {
       title: '✨ Privilégios — {tier}',
       body:
-        '🎲 Rolls/intervalo: **{rolls}**\n' +
+        '🎴 Packs/intervalo: **{packs}**\n' +
         '💍 Cooldown do claim: **{cooldown} min**\n' +
         '🗡️ Cooldown do roubo: **{steal} min**\n' +
-        '🔄 Rerolls/dia: **{rerolls}**\n' +
+        '🔄 Trocas de vitrine/dia: **{rerolls}**\n' +
         '🎁 Multiplicador do tributo: **×{tribute}**\n' +
         '⭐ Slots de wishlist: **{wishlist}**\n' +
         '🖼️ Slots de showcase: **{showcase}**\n' +
@@ -276,11 +320,6 @@ export const pt: LocaleTree = {
       none: 'Nenhuma assinatura encontrada para {user}.',
       found: '🔎 {user}: {tier} · {status} · {provider} · encerra {ends}',
     },
-  },
-  reroll: {
-    vip_required: '🔒 Reroll é um perk VIP (Tomodachi+).',
-    no_summon: '❓ Nenhum summon anterior para repetir. Use {prefix}summon antes.',
-    none_left: '⏳ Sem rerolls. Eles voltam {time}.',
   },
   soulmate: {
     vip_required: '🔒 Soulmate é um perk VIP (Kizuna+).',
@@ -454,8 +493,8 @@ export const pt: LocaleTree = {
     usage: '❓ Uso (dono): `{prefix}clearmessages [#canal]` — varre e deleta mensagens do bot + comandos.',
   },
   command: {
-    summon: { description: 'Invoca personagens aleatórios' },
-    bind: { description: 'Vincula um personagem do summon ativo' },
+    packs: { description: 'Mostra a vitrine de packs' },
+    open: { description: 'Abre um pack guardado' },
     collection: { description: 'Mostra uma coleção (deste servidor)' },
     wishlist: { description: 'Gerencia sua wishlist (add/remove/clear/list)' },
     profile: { description: 'Mostra o card de perfil do servidor' },
@@ -470,7 +509,6 @@ export const pt: LocaleTree = {
     vip: { description: 'VIP: visão geral, privilégios, status e checkout' },
     vipAdmin: { description: 'Só dono: conceder/consultar VIP' },
     marketAdmin: { description: 'Só dono: gerencia o mercado (add/remove/list)' },
-    reroll: { description: 'Repete seu último summon (VIP)' },
     soulmate: { description: 'Define seu personagem soulmate (Kizuna+)' },
     globalprofile: { description: 'Perfil cross-server' },
     globaltop: { description: 'Leaderboard global (harem/bond/UR)' },

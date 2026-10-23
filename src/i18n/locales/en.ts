@@ -46,6 +46,50 @@ export const en = {
     announce: '🥷 {thief} snatched **{name}** before anyone else! 💨',
     wishlist_ping: '🥷 {users}, {thief} just snatched **{name}** from your wishlist right under your nose! 💔',
   },
+  packs: {
+    title: '🎴 Pack showcase',
+    charges: '🎟️ Picks left: **{left}** · refills {time}',
+    charges_full: '🎟️ Picks left: **{left}**',
+    held: '🎒 Stored packs: **{total}/{max}** · open with {prefix}open',
+    held_none: '🎒 No stored packs.',
+    pool: '{size} characters',
+    refresh_button: '🔄 Refresh showcase ({left})',
+    resume_button: '🃏 Pending pack',
+    open_button: '📦 Open now',
+    picked: '🎒 **{name}** stored ({amount} in your inventory).',
+    opening: '📦 Pack opened in the channel.',
+    no_pending: 'No pack waiting for your pick.',
+    open_title: '📦 {user} opened **{pack}**',
+    open_hint: 'Pick one card. The others stay on the table for 10 minutes.',
+    leftover_until: '🗡️ Leftovers can be stolen until {time}',
+    take_button: '{index}. {name}',
+    steal_button: '🗡️ {name}',
+    owned: '💠 already owned',
+    took_mark: '💍 kept by {user}',
+    stolen_mark: '🥷 stolen',
+    took: '💍 **{name}** is yours!',
+    took_dupe: '💠 **{name}** already had an owner: duplicate paid **+{coins}** coins.',
+    open_pick_prompt: '🎒 Which pack do you want to open?',
+    open_pick_placeholder: 'Pick a pack',
+    open_pick_timeout: '⌛ Time is up.',
+    usage_open: '{prefix}open [pack]',
+    wishlist_ping: '🔔 {users}, **{name}** from your wishlist is on the table. Steal it!',
+    anime_wishlist_ping: '🎌 {users}, **{name}** (from **{series}**) is on the table. Steal it!',
+    NO_ROLLS: '⏳ You are out of picks. They refill {time}.',
+    NONE_LEFT: '⏳ No showcase refreshes left. They reset {time}.',
+    VIP_REQUIRED: '🔒 Refreshing the showcase is a VIP perk (Tomodachi+).',
+    PACK_NOT_IN_SHOWCASE: '🔄 The showcase changed. Use {prefix}packs again.',
+    PACK_INVENTORY_FULL: '🎒 Inventory full ({max} packs). Open one with {prefix}open.',
+    NO_PACKS: '🎒 You do not have that pack. See the showcase with {prefix}packs.',
+    PACK_NOT_FOUND: '❓ Pack not found.',
+    EMPTY_POOL: '❓ This pack has no characters right now.',
+    OPENING_NOT_FOUND: '❓ This pack opening no longer exists.',
+    ALREADY_PICKED: 'You already picked a card from this pack.',
+    NOT_IN_PACK: 'That card is not in this pack.',
+    NOT_STEALABLE: 'Leftovers from this pack cannot be stolen.',
+    OWN_PACK: 'You cannot steal from your own pack.',
+    CARD_TAKEN: 'That card is already gone.',
+  },
   thief: {
     role_name: 'Thief',
     new: "👑 {thief} just hit {count} thefts and is now the server's **Thief**!",
@@ -239,7 +283,7 @@ export const en = {
   vip: {
     overview: {
       title: '✨ VIP — current tier: {tier}',
-      current: '🎲 {rolls} rolls · ⭐ {wishlist} wishlist slots · 💍 {cooldown}min claim cooldown · 🗡️ {steal}min steal cooldown',
+      current: '🎴 {packs} packs · ⭐ {wishlist} wishlist slots · 💍 {cooldown}min claim cooldown · 🗡️ {steal}min steal cooldown',
       tiers: 'Tiers',
       upgrade: 'Upgrade with {prefix}vip checkout <tier>',
     },
@@ -247,10 +291,10 @@ export const en = {
     perks: {
       title: '✨ Perks — {tier}',
       body:
-        '🎲 Rolls/interval: **{rolls}**\n' +
+        '🎴 Packs/interval: **{packs}**\n' +
         '💍 Claim cooldown: **{cooldown} min**\n' +
         '🗡️ Steal cooldown: **{steal} min**\n' +
-        '🔄 Rerolls/day: **{rerolls}**\n' +
+        '🔄 Showcase refreshes/day: **{rerolls}**\n' +
         '🎁 Tribute multiplier: **×{tribute}**\n' +
         '⭐ Wishlist slots: **{wishlist}**\n' +
         '🖼️ Showcase slots: **{showcase}**\n' +
@@ -275,11 +319,6 @@ export const en = {
       none: 'No subscription found for {user}.',
       found: '🔎 {user}: {tier} · {status} · {provider} · ends {ends}',
     },
-  },
-  reroll: {
-    vip_required: '🔒 Reroll is a VIP perk (Tomodachi+).',
-    no_summon: '❓ No previous summon to reroll. Use {prefix}summon first.',
-    none_left: '⏳ No rerolls left. They reset {time}.',
   },
   soulmate: {
     vip_required: '🔒 Soulmate is a VIP perk (Kizuna+).',
@@ -453,8 +492,8 @@ export const en = {
     usage: '❓ Usage (owner): `{prefix}clearmessages [#channel]` — scan & delete bot messages + commands.',
   },
   command: {
-    summon: { description: 'Summon random characters' },
-    bind: { description: 'Bind a character from the active summon' },
+    packs: { description: 'Shows the pack showcase' },
+    open: { description: 'Opens a stored pack' },
     collection: { description: 'Show a collection (this server)' },
     wishlist: { description: 'Manage your wishlist (add/remove/clear/list)' },
     animewishlist: { description: 'Set/view/clear your favorite anime (pings you when it appears; 30-day lock)' },
@@ -470,7 +509,6 @@ export const en = {
     vip: { description: 'VIP overview, perks, status and checkout' },
     vipAdmin: { description: 'Owner-only: grant/lookup VIP' },
     marketAdmin: { description: 'Owner-only: manage the market (add/remove/list)' },
-    reroll: { description: 'Redo your last summon (VIP)' },
     soulmate: { description: 'Set your soulmate character (Kizuna+)' },
     globalprofile: { description: 'Cross-server profile' },
     globaltop: { description: 'Global leaderboard (harem/bond/UR)' },

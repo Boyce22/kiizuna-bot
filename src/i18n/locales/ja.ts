@@ -47,6 +47,50 @@ export const ja: LocaleTree = {
     announce: '🥷 {thief}が誰よりも早く**{name}**を横取りしました！ 💨',
     wishlist_ping: '🥷 {users}、{thief}がウィッシュリストの**{name}**を横取りしました！ 💔',
   },
+  packs: {
+    title: '🎴 パックショーケース',
+    charges: '🎟️ 残り選択: **{left}** · {time}に補充',
+    charges_full: '🎟️ 残り選択: **{left}**',
+    held: '🎒 保管中: **{total}/{max}** · {prefix}openで開封',
+    held_none: '🎒 保管中のパックはありません。',
+    pool: '{size}キャラ',
+    refresh_button: '🔄 ショーケース更新 ({left})',
+    resume_button: '🃏 未選択のパック',
+    open_button: '📦 今すぐ開封',
+    picked: '🎒 **{name}**を保管しました（所持{amount}）。',
+    opening: '📦 チャンネルでパックを開封しました。',
+    no_pending: '選択待ちのパックはありません。',
+    open_title: '📦 {user}が**{pack}**を開封',
+    open_hint: 'カードを1枚選んでください。残りは10分間テーブルに残ります。',
+    leftover_until: '🗡️ 残りは{time}まで奪えます',
+    take_button: '{index}. {name}',
+    steal_button: '🗡️ {name}',
+    owned: '💠 所有者あり',
+    took_mark: '💍 {user}が獲得',
+    stolen_mark: '🥷 奪われた',
+    took: '💍 **{name}**を獲得しました！',
+    took_dupe: '💠 **{name}**は所有者がいました: 重複分 **+{coins}** コイン。',
+    open_pick_prompt: '🎒 どのパックを開封しますか？',
+    open_pick_placeholder: 'パックを選択',
+    open_pick_timeout: '⌛ 時間切れです。',
+    usage_open: '{prefix}open [パック]',
+    wishlist_ping: '🔔 {users}、ウィッシュリストの**{name}**がテーブルにあります。奪えます！',
+    anime_wishlist_ping: '🎌 {users}、**{name}**（**{series}**）がテーブルにあります。奪えます！',
+    NO_ROLLS: '⏳ 選択回数がありません。{time}に補充されます。',
+    NONE_LEFT: '⏳ ショーケース更新がありません。{time}にリセットされます。',
+    VIP_REQUIRED: '🔒 ショーケース更新はVIP特典です（Tomodachi+）。',
+    PACK_NOT_IN_SHOWCASE: '🔄 ショーケースが変わりました。もう一度{prefix}packsを使ってください。',
+    PACK_INVENTORY_FULL: '🎒 インベントリが満杯です（{max}パック）。{prefix}openで開封してください。',
+    NO_PACKS: '🎒 そのパックを持っていません。{prefix}packsでショーケースを確認してください。',
+    PACK_NOT_FOUND: '❓ パックが見つかりません。',
+    EMPTY_POOL: '❓ このパックには現在キャラがいません。',
+    OPENING_NOT_FOUND: '❓ この開封はもう存在しません。',
+    ALREADY_PICKED: 'このパックのカードはすでに選びました。',
+    NOT_IN_PACK: 'そのカードはこのパックにありません。',
+    NOT_STEALABLE: 'このパックの残りは奪えません。',
+    OWN_PACK: '自分のパックからは奪えません。',
+    CARD_TAKEN: 'そのカードはもうありません。',
+  },
   thief: {
     role_name: '泥棒',
     new: '👑 {thief}が{count}回の盗みを達成し、サーバーの**泥棒**になりました！',
@@ -240,7 +284,7 @@ export const ja: LocaleTree = {
   vip: {
     overview: {
       title: '✨ VIP — 現在のティア: {tier}',
-      current: '🎲 {rolls}ロール · ⭐ ウィッシュリスト{wishlist}枠 · 💍 結びCD {cooldown}分 · 🗡️ 奪取CD {steal}分',
+      current: '🎴 {packs}パック · ⭐ ウィッシュリスト{wishlist}枠 · 💍 結びCD {cooldown}分 · 🗡️ 奪取CD {steal}分',
       tiers: 'ティア',
       upgrade: '{prefix}vip checkout <tier> でアップグレード',
     },
@@ -248,10 +292,10 @@ export const ja: LocaleTree = {
     perks: {
       title: '✨ 特典 — {tier}',
       body:
-        '🎲 ロール/間隔: **{rolls}**\n' +
+        '🎴 パック/間隔: **{packs}**\n' +
         '💍 結びのクールダウン: **{cooldown}分**\n' +
         '🗡️ 奪取のクールダウン: **{steal}分**\n' +
-        '🔄 リロール/日: **{rerolls}**\n' +
+        '🔄 ショーケース更新/日: **{rerolls}**\n' +
         '🎁 トリビュート倍率: **×{tribute}**\n' +
         '⭐ ウィッシュリスト枠: **{wishlist}**\n' +
         '🖼️ ショーケース枠: **{showcase}**\n' +
@@ -276,11 +320,6 @@ export const ja: LocaleTree = {
       none: '{user}のサブスクリプションが見つかりません。',
       found: '🔎 {user}: {tier} · {status} · {provider} · 終了 {ends}',
     },
-  },
-  reroll: {
-    vip_required: '🔒 リロールはVIP特典です（Tomodachi+）。',
-    no_summon: '❓ リロールする前回の召喚がありません。まず{prefix}summonを使ってください。',
-    none_left: '⏳ リロールがありません。{time}にリセットされます。',
   },
   soulmate: {
     vip_required: '🔒 ソウルメイトはVIP特典です（Kizuna+）。',
@@ -454,8 +493,8 @@ export const ja: LocaleTree = {
     usage: '❓ 使い方（オーナー）: `{prefix}clearmessages [#チャンネル]` — ボットメッセージとコマンドをスキャンして削除します。',
   },
   command: {
-    summon: { description: 'ランダムにキャラクターを召喚する' },
-    bind: { description: 'アクティブな召喚からキャラクターを結ぶ' },
+    packs: { description: 'パックショーケースを表示します' },
+    open: { description: '保管中のパックを開封します' },
     collection: { description: 'コレクションを表示する（このサーバー）' },
     wishlist: { description: 'ウィッシュリストを管理する (add/remove/clear/list)' },
     profile: { description: 'サーバーのプロフィールカードを表示する' },
@@ -470,7 +509,6 @@ export const ja: LocaleTree = {
     vip: { description: 'VIPの概要・特典・状況・チェックアウト' },
     vipAdmin: { description: 'オーナー専用: VIPの付与/照会' },
     marketAdmin: { description: 'オーナー専用: マーケットを管理 (add/remove/list)' },
-    reroll: { description: '直前の召喚をやり直す（VIP）' },
     soulmate: { description: 'ソウルメイトを設定する（Kizuna+）' },
     globalprofile: { description: 'サーバー横断プロフィール' },
     globaltop: { description: 'グローバルランキング（harem/bond/UR）' },
