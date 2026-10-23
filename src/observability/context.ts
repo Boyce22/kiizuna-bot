@@ -3,6 +3,20 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Logger } from './logger';
 import { childLogger, logger } from './logger';
 
+/**
+ * O que o Discord diz de quem disparou o comando, para a trilha anti-cheat da API (o IP do usuário
+ * o Discord nunca entrega). Vai assinado em todo pedido à API (`client.ts`), fora do log.
+ */
+export interface DiscordContext {
+  /** Id da interação (slash, botão) ou da mensagem (prefixo). */
+  eventId: string;
+  trigger: 'interaction' | 'message';
+  /** Idioma do cliente Discord do usuário; só interações têm. */
+  locale?: string;
+  /** Quando o membro entrou no servidor (ISO): alt recém-chegado é sinal. */
+  memberJoinedAt?: string;
+}
+
 export interface LogContext {
   requestId: string;
   source: 'message' | 'slash' | 'component' | 'system';
@@ -12,6 +26,8 @@ export interface LogContext {
   guildId?: string;
   channelId?: string;
   discordUserId?: string;
+  /** Não é campo de log: o `contextualLogger` o deixa de fora. */
+  discord?: DiscordContext;
 }
 
 const storage = new AsyncLocalStorage<LogContext>();
@@ -32,5 +48,6 @@ export function updateLogContext(bindings: Partial<LogContext>): void {
 export function contextualLogger(bindings: Record<string, unknown> = {}): Logger {
   const context = storage.getStore();
   if (!context && Object.keys(bindings).length === 0) return logger;
-  return childLogger({ ...(context ?? {}), ...bindings });
+  const { discord: _discord, ...fields } = context ?? {};
+  return childLogger({ ...fields, ...bindings });
 }

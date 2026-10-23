@@ -1,8 +1,8 @@
 import { performance } from 'node:perf_hooks';
 
 import type { ErrorCode } from './api-error-codes';
-import { newNonce, signInternalRequest } from './hmac';
-import { contextualLogger, currentLogContext } from './observability/context';
+import { newNonce, signInternalContext, signInternalRequest } from './hmac';
+import { contextualLogger, currentLogContext, type DiscordContext } from './observability/context';
 import { newCorrelationId } from './observability/logger';
 import { recordApiRequest } from './observability/telemetry';
 
@@ -95,12 +95,24 @@ export class InternalClient {
     }
   }
 
+  /** Contexto do Discord em base64url (JSON) e a assinatura dele presa ao nonce deste pedido. */
+  private discordContextHeaders(nonce: string, discord: DiscordContext | undefined): Record<string, string> {
+    if (!discord) return {};
+    const encoded = Buffer.from(JSON.stringify(discord), 'utf8').toString('base64url');
+    return {
+      'X-Kizuna-Context': encoded,
+      'X-Kizuna-Context-Signature': signInternalContext(this.secret, nonce, encoded),
+    };
+  }
+
   private async send<T>(pathname: string, body: unknown): Promise<T> {
     const raw = JSON.stringify(body ?? {});
     const timestamp = String(Math.floor(Date.now() / 1000));
     const nonce = newNonce();
     const signature = signInternalRequest(this.secret, timestamp, nonce, 'POST', pathname, raw);
-    const requestId = currentLogContext()?.requestId ?? newCorrelationId();
+    const logContext = currentLogContext();
+    const requestId = logContext?.requestId ?? newCorrelationId();
+    const contextHeaders = this.discordContextHeaders(nonce, logContext?.discord);
     const log = contextualLogger({ component: 'internal-api', method: 'POST', path: pathname });
     const startedAt = performance.now();
     try {
@@ -112,6 +124,7 @@ export class InternalClient {
           'X-Kizuna-Timestamp': timestamp,
           'X-Kizuna-Nonce': nonce,
           'X-Kizuna-Signature': signature,
+          ...contextHeaders,
         },
         body: raw,
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),

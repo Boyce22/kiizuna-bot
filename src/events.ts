@@ -12,6 +12,7 @@ import { renderThiefMessages } from './commands/thief.presenter';
 import { makeTranslator, resolveLocale } from './i18n/i18n.service';
 import type { GuildConfigView } from './interfaces';
 import { contextualLogger, runWithLogContext } from './observability/context';
+import { interactionDiscordContext, messageDiscordContext } from './observability/discord-context';
 import { parseSlashCommand } from './slash-command-catalog';
 import { parseCommand } from './utils/parser.util';
 
@@ -34,6 +35,7 @@ async function onMessageCreate(api: InternalClient, message: Message): Promise<v
       guildId: message.guildId,
       channelId: message.channelId,
       discordUserId: message.author.id,
+      discord: messageDiscordContext(message),
     },
     () => handleMessageCreate(api, message),
   );
@@ -72,6 +74,7 @@ async function onInteractionCreate(api: InternalClient, interaction: Interaction
       guildId: interaction.guildId ?? undefined,
       channelId: interaction.channelId ?? undefined,
       discordUserId: interaction.user.id,
+      discord: interactionDiscordContext(interaction),
     },
     () => handleInteractionCreate(api, interaction),
   );

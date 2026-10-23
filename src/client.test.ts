@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { afterEach, describe, it } from 'node:test';
 
 import { InternalApiError, InternalClient } from './client';
+import { signInternalContext } from './hmac';
+import { runWithLogContext } from './observability/context';
 
 const realFetch = globalThis.fetch;
 afterEach(() => {
@@ -76,6 +78,25 @@ describe('InternalClient: assinatura', () => {
     assert.match(first, /^[a-f0-9]{32}$/);
     assert.notEqual(first, second);
     assert.notEqual(calls[0].headers['X-Kizuna-Signature'], calls[1].headers['X-Kizuna-Signature']);
+  });
+
+  it('dentro de um comando, o contexto do Discord vai assinado e preso ao nonce', async () => {
+    const calls = recordCalls();
+    const discord = { eventId: '1234', trigger: 'interaction' as const, locale: 'pt-BR' };
+    await runWithLogContext({ requestId: 'r1', source: 'slash', discord }, () =>
+      client.post('/internal/v1/x', { a: 1 }),
+    );
+    const { headers } = calls[0];
+    const encoded = headers['X-Kizuna-Context'];
+    assert.deepEqual(JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8')), discord);
+    const expected = signInternalContext('secret', headers['X-Kizuna-Nonce'], encoded);
+    assert.equal(headers['X-Kizuna-Context-Signature'], expected);
+  });
+
+  it('fora de comando (job do bot), sem cabeçalho de contexto', async () => {
+    const calls = recordCalls();
+    await client.post('/internal/v1/x', { a: 1 });
+    assert.equal(calls[0].headers['X-Kizuna-Context'], undefined);
   });
 });
 
