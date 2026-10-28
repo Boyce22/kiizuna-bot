@@ -25,10 +25,9 @@ interface PickOk {
   amount: number;
 }
 
+/** A escolha sempre vira uma cópia nova na coleção (a posse não é única). */
 interface ChooseOk {
   opening: OpeningView;
-  kind: 'claim' | 'dupe';
-  coins: number;
   wishlistPings: Array<{ discordIds: string[]; name: string; series?: string; kind: 'character' | 'anime' }>;
 }
 
@@ -268,9 +267,7 @@ export class PacksCommands {
     await interaction.message.edit(renderTable(opening, opening.packName, actor.discordId, t));
     const card = opening.cards.find((entry) => entry.id === characterId);
     const name = card?.name ?? '';
-    const content =
-      result.kind === 'dupe' ? t('packs.took_dupe', { name, coins: result.coins }) : t('packs.took', { name });
-    await interaction.editReply({ content });
+    await interaction.editReply({ content: t('packs.took', { name }) });
 
     if (!interaction.channel?.isSendable()) return;
     for (const ping of result.wishlistPings) {

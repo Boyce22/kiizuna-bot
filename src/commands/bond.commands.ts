@@ -2,6 +2,7 @@ import type { ErrorCode } from '../api-error-codes';
 import type { InternalClient } from '../client';
 import { refusalMessage } from '../i18n/refusal';
 import type { CommandContext, CommandExecutor } from '../interfaces';
+import { parseCardRef, pickOwnedCopy } from './copy-picker';
 
 type Gift = { points: number; bond: number; attrs: { atk: number; speed: number; def: number }; name: string };
 type GiftAll = { cards: number; pointsEach: number; spent: number };
@@ -23,10 +24,16 @@ export class BondCommands {
       await this.handleGiftAll(ctx, Number(args[1]));
       return;
     }
-    const characterId = Number(args[0]);
+    const ref = parseCardRef(args[0]);
     const coins = Number(args[1]);
-    if (!Number.isInteger(characterId) || !Number.isFinite(coins) || coins <= 0) {
-      await invocation.reply(t('error.missing_args', { usage: '{prefix}gift <id_personagem> <coins>' }));
+    if (!ref || !Number.isFinite(coins) || coins <= 0) {
+      await invocation.reply(t('error.missing_args', { usage: '{prefix}gift <id_personagem | #id_cópia> <coins>' }));
+      return;
+    }
+    const pick = await pickOwnedCopy(this.api, ctx, ref);
+    if (pick.status === 'timeout') return;
+    if (pick.status === 'not_owned') {
+      await invocation.reply(t('gift.not_owned'));
       return;
     }
 
@@ -34,7 +41,8 @@ export class BondCommands {
       discordId: user.discordId,
       username: user.username ?? undefined,
       guildId: invocation.guildId,
-      characterId,
+      characterId: pick.copy.characterId,
+      cardId: pick.copy.cardId,
       coins,
     });
     if (!result.ok) {
@@ -89,9 +97,15 @@ export class BondCommands {
 
   private handleSoulmate = async (ctx: CommandContext): Promise<void> => {
     const { invocation, args, user, t } = ctx;
-    const characterId = Number(args[0]);
-    if (!Number.isInteger(characterId)) {
-      await invocation.reply(t('error.missing_args', { usage: '{prefix}soulmate <id_personagem>' }));
+    const ref = parseCardRef(args[0]);
+    if (!ref) {
+      await invocation.reply(t('error.missing_args', { usage: '{prefix}soulmate <id_personagem | #id_cópia>' }));
+      return;
+    }
+    const pick = await pickOwnedCopy(this.api, ctx, ref);
+    if (pick.status === 'timeout') return;
+    if (pick.status === 'not_owned') {
+      await invocation.reply(t('soulmate.not_owned'));
       return;
     }
 
@@ -99,7 +113,8 @@ export class BondCommands {
       discordId: user.discordId,
       username: user.username ?? undefined,
       guildId: invocation.guildId,
-      characterId,
+      characterId: pick.copy.characterId,
+      cardId: pick.copy.cardId,
     });
     if (!result.ok) {
       await invocation.reply(

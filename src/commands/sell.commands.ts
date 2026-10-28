@@ -1,6 +1,7 @@
 import type { InternalClient } from '../client';
 import { awaitConfirmation } from '../discord/confirmation';
 import type { CommandContext, CommandExecutor } from '../interfaces';
+import { parseCardRef, pickOwnedCopy } from './copy-picker';
 
 export class SellCommands {
   constructor(private readonly api: InternalClient) {}
@@ -11,21 +12,18 @@ export class SellCommands {
 
   private handleSell = async (ctx: CommandContext): Promise<void> => {
     const { invocation, args, user, t } = ctx;
-    const characterId = Number(args[0]);
-    if (!Number.isInteger(characterId)) {
-      await invocation.reply(t('error.missing_args', { usage: '{prefix}sell <id_personagem>' }));
+    const ref = parseCardRef(args[0]);
+    if (!ref) {
+      await invocation.reply(t('error.missing_args', { usage: '{prefix}sell <id_personagem | #id_cópia>' }));
       return;
     }
-    const owned = await this.api.call<{ name: string; kizunaPrice: number }>('/internal/v1/harem/owned', {
-      discordId: user.discordId,
-      username: user.username ?? undefined,
-      guildId: invocation.guildId,
-      characterId,
-    });
-    if (!owned.ok) {
+    const pick = await pickOwnedCopy(this.api, ctx, ref);
+    if (pick.status === 'timeout') return;
+    if (pick.status === 'not_owned') {
       await invocation.reply(t('sell.not_owned'));
       return;
     }
+    const owned = pick.copy;
     const outcome = await awaitConfirmation({
       invocation,
       content: t('sell.confirm', { name: owned.name, price: owned.kizunaPrice }),
@@ -47,7 +45,8 @@ export class SellCommands {
       discordId: user.discordId,
       username: user.username ?? undefined,
       guildId: invocation.guildId,
-      characterId,
+      characterId: owned.characterId,
+      cardId: owned.cardId,
     });
     await outcome.interaction.update({
       content: result.ok ? t('sell.done', { name: result.name, price: result.price }) : t('sell.locked'),

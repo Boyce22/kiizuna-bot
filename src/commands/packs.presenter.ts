@@ -144,7 +144,6 @@ function cardEmbed(card: OpenedCard, opening: OpeningView, ownerId: string, t: T
   const stolen = !!opening.pickedCharacterId && !picked && !opening.leftovers.includes(card.id);
   if (picked) lines.push(t('packs.took_mark', { user: `<@${ownerId}>` }));
   if (stolen) lines.push(t('packs.stolen_mark'));
-  if (card.owned && !picked && !stolen) lines.push(t('packs.owned'));
 
   const embed = new EmbedBuilder()
     .setTitle(`${RARITY_EMOJI[card.rarity]} ${card.name}`)

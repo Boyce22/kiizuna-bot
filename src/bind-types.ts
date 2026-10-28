@@ -12,10 +12,10 @@ export interface ThiefEvent {
 }
 
 export type BindResult =
-  | { ok: false; code: 'NONE_ACTIVE' | 'EXPIRED' }
+  // DROP_TAKEN: outra pessoa reservou este drop primeiro (o cooldown não foi gasto).
+  | { ok: false; code: 'NONE_ACTIVE' | 'EXPIRED' | 'DROP_TAKEN' }
   // `claim` = summon próprio; `steal` = summon de outra pessoa (cooldowns separados).
   | { ok: false; code: 'COOLDOWN'; bindKind: 'claim' | 'steal'; cooldownUntil: Date }
-  | { ok: true; kind: 'dupe'; name: string; coins: number }
   | {
       ok: true;
       kind: 'claim';

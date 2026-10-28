@@ -5,6 +5,8 @@ import type { InternalClient } from '../client';
 import { refusalMessage } from '../i18n/refusal';
 import type { CommandContext, CommandExecutor } from '../interfaces';
 
+import { parseCardRef, pickOwnedCopy } from './copy-picker';
+
 import { buildAuctionInfoEmbed, buildAuctionsEmbed, type AuctionView } from './market.presenter';
 
 export class AuctionCommands {
@@ -21,16 +23,23 @@ export class AuctionCommands {
     const sub = (args[0] ?? 'list').toLowerCase();
 
     if (sub === 'start') {
-      const characterId = Number(args[1]);
-      if (!Number.isInteger(characterId)) {
-        await invocation.reply(t('error.missing_args', { usage: '{prefix}auction start <id_personagem> [lance] [--buynow x] [--horas h]' }));
+      const ref = parseCardRef(args[1]);
+      if (!ref) {
+        await invocation.reply(t('error.missing_args', { usage: '{prefix}auction start <id_personagem | #id_cópia> [lance] [--buynow x] [--horas h]' }));
+        return;
+      }
+      const pick = await pickOwnedCopy(this.api, ctx, ref);
+      if (pick.status === 'timeout') return;
+      if (pick.status === 'not_owned') {
+        await invocation.reply(refusalMessage(t, 'auction', 'NOT_OWNED'));
         return;
       }
       const result = await this.api.call<{ auctionId: number; endsAt: string }, { floor: number }>(
         '/internal/v1/market/auction/start',
         {
         ...actor,
-        characterId,
+        characterId: pick.copy.characterId,
+        cardId: pick.copy.cardId,
         startingBid: args[2] && /^\d+$/.test(args[2]) ? Number(args[2]) : undefined,
         buyNow: typeof flags.buynow === 'string' ? Number(flags.buynow) : undefined,
         hours: typeof flags.horas === 'string' ? Number(flags.horas) : undefined,

@@ -15,10 +15,8 @@ export function reviveBindResult(raw: ApiResult<Record<string, unknown>, Record<
       };
     }
     if (raw.code === 'EXPIRED') return { ok: false, code: 'EXPIRED' };
+    if (raw.code === 'DROP_TAKEN') return { ok: false, code: 'DROP_TAKEN' };
     return { ok: false, code: 'NONE_ACTIVE' };
-  }
-  if (raw.kind === 'dupe') {
-    return { ok: true, kind: 'dupe', name: String(raw.name), coins: Number(raw.coins) };
   }
   return {
     ok: true,

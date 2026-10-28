@@ -22,12 +22,10 @@ export function renderBindResult(result: BindResult, t: TranslateFn): BindMessag
     if (result.code === 'EXPIRED') {
       return { content: t('bind.expired') };
     }
+    if (result.code === 'DROP_TAKEN') {
+      return { content: t('bind.drop_taken') };
+    }
     return { content: t('bind.none_active') };
-  }
-
-  // Já tinha dono: sem roubo, só a duplicata em coins (resposta privada, sem announce público).
-  if (result.kind === 'dupe') {
-    return { content: t('bind.dupe', { name: result.name, coins: result.coins }) };
   }
 
   const thief = `<@${result.binderId}>`;

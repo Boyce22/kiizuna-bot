@@ -7,10 +7,13 @@ import { awaitConfirmation } from '../discord/confirmation';
 import { awaitSelection } from '../discord/selection';
 import type { CommandContext, CommandExecutor } from '../interfaces';
 
+import { copyLabel, type CopyView, parseCardRef, pickOwnedCopy } from './copy-picker';
+
 const MINE_FLAGS = new Set(['meu', 'mine', 'mio', 'mío']);
 const THEIRS_FLAGS = new Set(['dele', 'theirs', 'suyo']);
 
-interface OwnedMatch {
+/** Uma cópia encontrada (pelo id ou pelo nome); o nome traz uma linha por cópia. */
+interface OwnedMatch extends CopyView {
   characterId: number;
   name: string;
   rarity: string;
@@ -44,7 +47,7 @@ export class TradeCommands {
       mineToken = mineFlag;
       theirsToken = theirsFlag;
     } else {
-      const ids = args.filter((a) => /^\d+$/.test(a));
+      const ids = args.filter((a) => /^#?\d+$/.test(a));
       if (ids.length < 2) {
         await invocation.reply(t('error.missing_args', { usage: '{prefix}trade @user <meu_id> <id_dele> (ou --meu <nome> --dele <nome>)' }));
         return;
@@ -90,6 +93,8 @@ export class TradeCommands {
       guildId,
       mineCharacterId: mine.characterId,
       theirsCharacterId: theirs.characterId,
+      mineCardId: mine.cardId,
+      theirsCardId: theirs.cardId,
     });
     await outcome.interaction.update({
       content: result.ok ? t('trade.done') : refusalMessage(t, 'trade', result.code),
@@ -107,18 +112,15 @@ export class TradeCommands {
   ): Promise<OwnedMatch | null> {
     const { invocation, t } = ctx;
     const guildId = invocation.guildId!;
-    if (/^\d+$/.test(token)) {
-      const owned = await this.api.call<OwnedMatch>('/internal/v1/harem/owned', {
-        discordId,
-        username,
-        guildId,
-        characterId: Number(token),
-      });
-      if (!owned.ok) {
+    const ref = parseCardRef(token);
+    if (ref) {
+      const pick = await pickOwnedCopy(this.api, ctx, ref, { discordId, username });
+      if (pick.status === 'timeout') return null;
+      if (pick.status === 'not_owned') {
         await invocation.reply(t(notOwnedKey, vars));
         return null;
       }
-      return owned;
+      return pick.copy;
     }
     const { matches } = await this.api.post<{ matches: OwnedMatch[] }>('/internal/v1/harem/owned-by-name', {
       discordId,
@@ -136,7 +138,7 @@ export class TradeCommands {
       content: t('trade.pick_prompt'),
       placeholder: t('trade.pick_placeholder'),
       options: matches.map((h) => ({
-        label: h.name.slice(0, 100),
+        label: `${h.name} · ${copyLabel(h)}`.slice(0, 100),
         description: (h.series ?? t('trade.unknown_series')).slice(0, 100),
         value: h,
       })),
