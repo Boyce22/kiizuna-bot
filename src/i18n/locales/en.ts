@@ -174,7 +174,7 @@ export const en = {
       global: '🌐 Global',
       vip: '✨ VIP',
       settings: '⚙️ Settings',
-      admin: '🛠️ Admin',
+      admin: 'Admin',
       core: '🧭 General',
     },
   },
@@ -348,6 +348,10 @@ export const en = {
   campaign: {
     overtaken_dm: "🩸 **{challenger}** completed the Climb in **{campaign}** and took rank **#{rank}**. You dropped one spot. Build a better team and take it back.",
     defense_digest_dm: "🛡️ Yesterday you were challenged **{total}x** on the podium and held your spot **{held}** times.",
+  },
+  artisan: {
+    idle_warning_dm: "Your artisan card **{name}** is idle. Use it, auction it or list it on the black market: in **{days}** days it returns to the market.",
+    retired_dm: "Your artisan card **{name}** went 75 days unused and returned to the market.",
   },
   ranks: {
     title: '🏆 Rank ladder',

@@ -175,7 +175,7 @@ export const ja: LocaleTree = {
       global: '🌐 グローバル',
       vip: '✨ VIP',
       settings: '⚙️ 設定',
-      admin: '🛠️ 管理',
+      admin: '管理',
       core: '🧭 一般',
     },
   },
@@ -349,6 +349,10 @@ export const ja: LocaleTree = {
   campaign: {
     overtaken_dm: "🩸 **{challenger}** が **{campaign}** のクライムを制し、**#{rank}** を奪いました。あなたの順位は1つ下がりました。より強いチームで取り返しましょう。",
     defense_digest_dm: "🛡️ 昨日、表彰台で **{total}回** 挑戦され、**{held}回** 防衛しました。",
+  },
+  artisan: {
+    idle_warning_dm: "職人カード **{name}** が使われていません。使うか、オークションに出すか、闇市場に出品してください。**{days}日** 後に市場へ戻ります。",
+    retired_dm: "職人カード **{name}** は75日間使われなかったため、市場に戻りました。",
   },
   ranks: {
     title: '🏆 ランク一覧',

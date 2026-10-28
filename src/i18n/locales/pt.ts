@@ -175,7 +175,7 @@ export const pt: LocaleTree = {
       global: '🌐 Global',
       vip: '✨ VIP',
       settings: '⚙️ Configurações',
-      admin: '🛠️ Admin',
+      admin: 'Admin',
       core: '🧭 Geral',
     },
   },
@@ -349,6 +349,10 @@ export const pt: LocaleTree = {
   campaign: {
     overtaken_dm: "🩸 **{challenger}** completou a Escalada em **{campaign}** e tomou a posição **#{rank}**. Você desceu uma posição. Monte um time melhor e retome o lugar.",
     defense_digest_dm: "🛡️ Ontem você foi desafiado **{total}x** no pódio e segurou a posição em **{held}**.",
+  },
+  artisan: {
+    idle_warning_dm: "Sua carta-artesã **{name}** está parada. Use, leiloe ou anuncie no mercado negro: em **{days}** dias ela volta ao mercado.",
+    retired_dm: "Sua carta-artesã **{name}** ficou 75 dias sem uso e voltou ao mercado.",
   },
   ranks: {
     title: '🏆 CLASSIFICAÇÃO',
