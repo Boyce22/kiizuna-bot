@@ -1,4 +1,4 @@
-import { discordRelative } from '@utils';
+import { checkNsfwPermission, discordRelative } from '@utils';
 import type { ButtonComponent, ButtonInteraction, Message } from 'discord.js';
 import { ActionRowBuilder, ButtonBuilder, ComponentType } from 'discord.js';
 
@@ -118,6 +118,8 @@ export class PacksCommands {
       guildId: invocation.guildId,
       packId,
       channelId: invocation.channelId,
+      // Personagem NSFW só sai em canal NSFW (e para conta liberada, que a API confere).
+      channelNsfw: checkNsfwPermission(invocation.channel, true).allowed,
     });
     if (!opened.ok) {
       await invocation.reply(refusal(t, opened));
@@ -213,6 +215,7 @@ export class PacksCommands {
       ...this.player(actor),
       packId,
       channelId: interaction.channelId,
+      channelNsfw: checkNsfwPermission(interaction.channel, true).allowed,
     });
     if (!result.ok) {
       await interaction.editReply({ content: refusal(t, result) });
