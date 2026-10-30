@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 
+import type { Locale } from '../interfaces';
 import type { Logger } from './logger';
 import { childLogger, logger } from './logger';
 
@@ -28,6 +29,11 @@ export interface LogContext {
   discordUserId?: string;
   /** Não é campo de log: o `contextualLogger` o deixa de fora. */
   discord?: DiscordContext;
+  /**
+   * Idioma de quem disparou o comando, assim que conhecido: vai como `Accept-Language` em todo
+   * pedido à API, que devolve o conteúdo (perks, passivas, packs) já nele.
+   */
+  locale?: Locale;
 }
 
 const storage = new AsyncLocalStorage<LogContext>();

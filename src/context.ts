@@ -2,6 +2,7 @@ import type { InternalClient } from './client';
 import type { CommandInvocation } from './command-invocation';
 import { makeTranslator, resolveLocale } from './i18n/i18n.service';
 import type { BotUser, CommandContext, GuildConfigView, Locale } from './interfaces';
+import { updateLogContext } from './observability/context';
 import type { ParsedCommand } from './utils/parser.util';
 
 export async function buildContext(
@@ -20,6 +21,7 @@ export async function buildContext(
     }),
   ]);
   const locale = resolveLocale(user.locale, guildConfig.defaultLocale);
+  updateLogContext({ locale });
   return {
     invocation,
     args: parsed.args,

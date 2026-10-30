@@ -113,6 +113,8 @@ export class InternalClient {
     const logContext = currentLogContext();
     const requestId = logContext?.requestId ?? newCorrelationId();
     const contextHeaders = this.discordContextHeaders(nonce, logContext?.discord);
+    // Fora da assinatura: só escolhe o idioma do conteúdo da resposta, não autoriza nada.
+    const languageHeaders: Record<string, string> = logContext?.locale ? { 'Accept-Language': logContext.locale } : {};
     const log = contextualLogger({ component: 'internal-api', method: 'POST', path: pathname });
     const startedAt = performance.now();
     try {
@@ -125,6 +127,7 @@ export class InternalClient {
           'X-Kizuna-Nonce': nonce,
           'X-Kizuna-Signature': signature,
           ...contextHeaders,
+          ...languageHeaders,
         },
         body: raw,
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),

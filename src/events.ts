@@ -11,7 +11,7 @@ import { PacksCommands } from './commands/packs.commands';
 import { PACKS_CUSTOM_ID } from './commands/packs.presenter';
 import { makeTranslator, resolveLocale } from './i18n/i18n.service';
 import type { GuildConfigView } from './interfaces';
-import { contextualLogger, runWithLogContext } from './observability/context';
+import { contextualLogger, runWithLogContext, updateLogContext } from './observability/context';
 import { interactionDiscordContext, messageDiscordContext } from './observability/discord-context';
 import { parseSlashCommand } from './slash-command-catalog';
 import { parseCommand } from './utils/parser.util';
@@ -134,9 +134,9 @@ async function handleInteractionCreate(api: InternalClient, packs: PacksCommands
     const guildConfig = await api.post<
       Pick<GuildConfigView, 'prefix' | 'defaultLocale' | 'scopeMode' | 'rollIntervalMinutes'>
     >('/internal/v1/guilds/ensure', { guildId: interaction.guildId });
-    const t = makeTranslator(resolveLocale(user.locale, guildConfig.defaultLocale), {
-      prefix: guildConfig.prefix,
-    });
+    const locale = resolveLocale(user.locale, guildConfig.defaultLocale);
+    updateLogContext({ locale });
+    const t = makeTranslator(locale, { prefix: guildConfig.prefix });
     if (!guildConfig.scopeMode) {
       await interaction.editReply({ content: t('error.GUILD_NOT_CONFIGURED', { prefix: guildConfig.prefix }) });
       return;
